@@ -1,0 +1,220 @@
+```mermaid
+    erDiagram
+        INSTITUCION {
+            bigint ID_Institucion PK
+            nvarchar Nombre
+            nvarchar RazonSocial
+            nvarchar Cuit
+        }
+
+        SEDE {
+            bigint ID_Sede PK
+            bigint ID_Institucion FK
+            nvarchar Nombre
+            bigint ID_Localidad FK
+            nvarchar Direccion
+            nvarchar Telefono
+            nvarchar Mail
+        }
+
+        PROFESOR {
+            bigint ID_Profesor PK
+            nvarchar Dni
+            nvarchar Nombre
+            nvarchar Apellido
+            datetime2 FechaNacimiento
+            nvarchar Mail
+            nvarchar Direccion
+            nvarchar Telefono
+            bigint ID_Localidad FK
+        }
+
+        ALUMNO {
+            bigint Legajo_Alumno PK
+            bigint Dni
+            varchar Nombre
+            varchar Apellido
+            datetime2 FechaNacimiento
+            varchar Mail
+            varchar Direccion
+            varchar Telefono
+            bigint ID_Localidad FK
+        }
+
+        CURSO {
+            bigint Cod_Curso PK
+            bigint ID_Sede FK
+            bigint ID_Profesor FK
+            varchar Nombre
+            varchar Descripcion
+            bigint ID_Categoria FK
+            datetime2 FechaInicio
+            datetime2 FechaFin
+            bigint DuracionMeses
+            bigint ID_Dia FK
+            bigint ID_Turno FK
+            decimal PrecioMensual
+        }
+
+        MODULO {
+            bigint ID_Modulo PK
+            bigint ID_Curso FK
+            varchar Nombre
+            varchar Descripcion
+        }
+
+        INSCRIPCION {
+            bigint Nro_Inscripcion PK
+            bigint Legajo_Alumno FK
+            bigint Cod_Curso FK
+            datetime2 FechaInscripcion
+            varchar Estado
+            datetime2 FechaRespuesta
+        }
+
+        EVALUACION_CURSO {
+            bigint ID_EvaluacionCurso PK
+            bigint Nro_inscripcion FK
+            bigint ID_Modulo FK
+            datetime2 FechaEvaluacion
+            bigint Nota
+            bit Presente
+            bigint Instancia
+        }
+
+        TRABAJO_PRACTICO {
+            bigint ID_TrabajoPractico PK
+            bigint Nro_inscripcion FK
+            datetime2 FechaEvaluacion
+            bigint Nota
+        }
+
+        EXAMEN_FINAL {
+            bigint ID_ExamenFinal PK
+            bigint Cod_Curso FK
+            datetime2 Fecha
+            varchar Hora
+            varchar Descripcion
+        }
+
+        INSCRIPCION_FINAL {
+            bigint Nro_inscripcionFinal PK
+            bigint Legajo_Alumno FK
+            bigint ID_ExamenFinal FK
+            datetime2 FechaInscripcion
+        }
+
+        EVALUACION_FINAL {
+            bigint ID_EvaluacionFinal PK
+            bigint Nro_inscripcionFinal FK
+            bigint ID_Profesor FK
+            bigint Nota
+            bit Presente
+        }
+
+        FACTURA {
+            bigint Nro_Factura PK
+            bigint Legajo_Alumno FK
+            datetime2 FechaEmision
+            datetime2 FechaVencimiento
+            decimal Total
+        }
+
+        DETALLE_FACTURA {
+            bigint ID_DetalleFactura PK
+            bigint Nro_Factura FK
+            bigint Cod_Curso FK
+            bigint PeriodoAnio
+            bigint PeriodoMes
+            decimal Importe
+        }
+
+        MEDIO_PAGO {
+            bigint ID_MedioPago PK
+            varchar Medio
+        }
+
+        PAGO {
+            bigint ID_Pago PK
+            bigint Nro_Factura FK
+            bigint ID_MedioPago FK
+            datetime2 Fecha
+            decimal Importe
+        }
+
+        ENCUESTA {
+            bigint ID_Encuesta PK
+            bigint Cod_Curso FK
+            datetime2 FechaRegistro
+            varchar Observacion
+        }
+
+        PREGUNTA_ENCUESTA {
+            bigint ID_PreguntaEncuesta PK
+            varchar Pregunta
+        }
+
+        RESPUESTA_ENCUESTA {
+            bigint ID_RespuestaEncuesta PK
+            bigint ID_Encuesta FK
+            bigint ID_PreguntaEncuesta FK
+            bigint Nota
+        }
+
+        TURNO {
+            bigint ID_Turno PK
+            varchar Nombre
+        }
+
+        DIA {
+            tinyint ID_Dia PK
+            varchar Nombre
+        }
+
+        CATEGORIA {
+            int ID_Categoria PK
+            varchar Nombre
+        }
+
+        LOCALIDAD {
+            bigint ID_Localidad PK
+            nvarchar Nombre
+            bigint ID_Provincia FK
+        }
+
+        PROVINCIA {
+            bigint ID_Provincia PK
+            nvarchar Nombre
+        }
+
+        INSTITUCION ||--o{ SEDE : "tiene"
+        SEDE ||--o{ CURSO : "ofrece"
+        PROFESOR ||--o{ CURSO : "dicta"
+        CURSO ||--o{ MODULO : "contiene"
+        ALUMNO ||--o{ INSCRIPCION : "realiza"
+        CURSO ||--o{ INSCRIPCION : "recibe"
+        INSCRIPCION ||--o{ EVALUACION_CURSO : "genera"
+        MODULO ||--o{ EVALUACION_CURSO : "evalua"
+        INSCRIPCION ||--o{ TRABAJO_PRACTICO : "presenta"
+        CURSO ||--o{ EXAMEN_FINAL : "tiene"
+        ALUMNO ||--o{ INSCRIPCION_FINAL : "se_inscribe"
+        EXAMEN_FINAL ||--o{ INSCRIPCION_FINAL : "recibe"
+        INSCRIPCION_FINAL ||--o{ EVALUACION_FINAL : "genera"
+        PROFESOR ||--o{ EVALUACION_FINAL : "corrige"
+        ALUMNO ||--o{ FACTURA : "recibe"
+        FACTURA ||--o{ DETALLE_FACTURA : "contiene"
+        CURSO ||--o{ DETALLE_FACTURA : "incluye"
+        FACTURA ||--o{ PAGO : "recibe"
+        MEDIO_PAGO ||--o{ PAGO : "utiliza"
+        CURSO ||--o{ ENCUESTA : "genera"
+        ENCUESTA ||--o{ RESPUESTA_ENCUESTA : "contiene"
+        PREGUNTA_ENCUESTA ||--o{ RESPUESTA_ENCUESTA : "respondida_en"
+        
+    TURNO ||--o{ CURSO : "asigna"
+    DIA ||--o{ CURSO : "corresponde_a"
+    CATEGORIA ||--o{ CURSO : "clasifica"
+    LOCALIDAD ||--o{ SEDE : "tiene"
+    LOCALIDAD ||--o{ PROFESOR : "reside_en"
+    LOCALIDAD ||--o{ ALUMNO : "reside_en"
+    PROVINCIA ||--o{ LOCALIDAD : "contiene"
+```
