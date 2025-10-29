@@ -5,6 +5,7 @@
 4) Migrate tablas de lookup/auxiliares.
 5) Migrate tablas core (Institucion, Sede, Profesor, Alumno, Curso, Modulo, Inscripcion).
 6) Migrate tablas restantes (Evaluacion_Curso, Trabajo_Practico, Examen_Final, Inscripcion_Final, Evaluacion_Final, Factura, Detalle_Factura, Medio_Pago, Pago, Encuesta, Pregunta_Encuesta, Respuesta_Encuesta).
+7) Migrate completo
 
 Cada migrate es un stored procedure aparte con TRY/CATCH y transacciones.
 */
