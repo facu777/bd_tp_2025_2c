@@ -1,20 +1,16 @@
--- Script DROP/CREATE para gd_esquema
--- Ejecutar en SQL Server (SSMS o sqlcmd). Ajusta "USE <DB>" si corresponde.
-
--- Script DROP/CREATE para empanadas_indexadas
--- Ejecutar en SQL Server (SSMS o sqlcmd). Ajusta "USE <DB>" si corresponde.
-
--- USE GD2C2025;
-
 /*
-  Estrategia:
-  1) DROP TABLE IF EXISTS en orden inverso a dependencias para evitar errores por FKs.
-  2) Crear schema si no existe.
-  3) CREATE TABLE en orden que satisface FKs.
+1) DROP TABLE IF EXISTS en orden inverso a dependencias para evitar errores por FKs.
+2) Crear schema si no existe.
+3) CREATE TABLE en orden que satisface FKs.
+4) Migrate tablas de lookup/auxiliares.
+5) Migrate tablas core (Institucion, Sede, Profesor, Alumno, Curso, Modulo, Inscripcion).
+6) Migrate tablas restantes (Evaluacion_Curso, Trabajo_Practico, Examen_Final, Inscripcion_Final, Evaluacion_Final, Factura, Detalle_Factura, Medio_Pago, Pago, Encuesta, Pregunta_Encuesta, Respuesta_Encuesta).
+
+Cada migrate es un stored procedure aparte con TRY/CATCH y transacciones.
 */
 
 --------------------------------------------------------------------------------
--- 1) Drops (orden inverso a dependencias)
+-- 1) Drops (orden inverso)
 --------------------------------------------------------------------------------
 DROP TABLE IF EXISTS empanadas_indexadas.RESPUESTA_ENCUESTA;
 DROP TABLE IF EXISTS empanadas_indexadas.PREGUNTA_ENCUESTA;
@@ -50,7 +46,7 @@ BEGIN
 END
 
 --------------------------------------------------------------------------------
--- 3) CREATEs (orden seguro)
+-- 3) CREATEs
 --------------------------------------------------------------------------------
 CREATE TABLE empanadas_indexadas.PROVINCIA (
     ID_Provincia BIGINT IDENTITY(1,1) PRIMARY KEY,
@@ -299,17 +295,9 @@ CREATE TABLE empanadas_indexadas.RESPUESTA_ENCUESTA (
 );
 
 
--- Fin del script
--- Stored procedures to run migration from GD2C2025.gd_esquema.Maestra
--- into schema empanadas_indexadas.
--- Each procedure is idempotent and uses TRY/CATCH with transactions.
--- Deploy these procedures to GD2C2025 and then CALL empanadas_indexadas.sp_migrate_all();
-
-
-/*
-  Procedure: empanadas_indexadas.sp_migrate_lookups
-  Inserts lookup/auxiliary tables: PROVINCIA, LOCALIDAD, TURNO, DIA, CATEGORIA, MEDIO_PAGO
-*/
+--------------------------------------------------------------------------------
+-- 4) Migrate tablas de lookup/auxiliares
+--------------------------------------------------------------------------------
 IF OBJECT_ID('empanadas_indexadas.sp_migrate_lookups', 'P') IS NOT NULL
     DROP PROCEDURE empanadas_indexadas.sp_migrate_lookups;
 GO
@@ -389,10 +377,9 @@ END;
 GO
 
 
-/*
-  Procedure: empanadas_indexadas.sp_migrate_core
-  Inserts core tables: INSTITUCION, SEDE, PROFESOR, ALUMNO, CURSO, MODULO, INSCRIPCION
-*/
+--------------------------------------------------------------------------------
+-- 5) Migrate tablas core
+--------------------------------------------------------------------------------
 IF OBJECT_ID('empanadas_indexadas.sp_migrate_core', 'P') IS NOT NULL
     DROP PROCEDURE empanadas_indexadas.sp_migrate_core;
 GO
@@ -438,7 +425,7 @@ BEGIN
         WHERE (m.Profesor_Dni IS NOT NULL AND LTRIM(RTRIM(m.Profesor_Dni)) <> '')
           AND NOT EXISTS (SELECT 1 FROM empanadas_indexadas.PROFESOR p WHERE p.Dni = TRIM(m.Profesor_Dni));
 
-        -- Alumnos (preservar Legajo si está presente)
+        -- Alumnos (preservar Legajo si tiene)
         IF EXISTS (SELECT 1 FROM sys.columns WHERE [object_id] = OBJECT_ID(N'empanadas_indexadas.ALUMNO') AND name = 'Legajo_Alumno')
         BEGIN
             SET IDENTITY_INSERT empanadas_indexadas.ALUMNO ON;
@@ -462,7 +449,7 @@ BEGIN
               AND NOT EXISTS (SELECT 1 FROM empanadas_indexadas.ALUMNO a WHERE a.Dni = m.Alumno_Dni AND m.Alumno_Dni IS NOT NULL);
         END
 
-        -- Cursos (preservar Curso_Codigo si existe)
+        -- Cursos (preservar Curso_Codigo si tiene)
         IF EXISTS (SELECT 1 FROM sys.columns WHERE [object_id] = OBJECT_ID(N'empanadas_indexadas.CURSO') AND name = 'Cod_Curso')
         BEGIN
             SET IDENTITY_INSERT empanadas_indexadas.CURSO ON;
@@ -522,7 +509,7 @@ BEGIN
         WHERE m.Modulo_Nombre IS NOT NULL AND LTRIM(RTRIM(m.Modulo_Nombre)) <> ''
           AND NOT EXISTS (SELECT 1 FROM empanadas_indexadas.MODULO mo WHERE mo.Nombre = TRIM(m.Modulo_Nombre) AND mo.ID_Curso = cu.Cod_Curso);
 
-        -- Inscripciones (preservar numero si existe)
+        -- Inscripciones (preservar numero si tiene)
         IF EXISTS (SELECT 1 FROM sys.columns WHERE [object_id] = OBJECT_ID(N'empanadas_indexadas.INSCRIPCION') AND name = 'Nro_Inscripcion')
         BEGIN
             SET IDENTITY_INSERT empanadas_indexadas.INSCRIPCION ON;
@@ -551,11 +538,9 @@ BEGIN
 END;
 GO
 
-
-/*
-  Procedure: empanadas_indexadas.sp_migrate_finalize
-  Inserts evaluations, exams, billing and surveys.
-*/
+--------------------------------------------------------------------------------
+-- 6) Migrate tablas de evaluaciones y finales
+--------------------------------------------------------------------------------
 IF OBJECT_ID('empanadas_indexadas.sp_migrate_finalize', 'P') IS NOT NULL
     DROP PROCEDURE empanadas_indexadas.sp_migrate_finalize;
 GO
@@ -743,7 +728,9 @@ END;
 GO
 
 
-/* Master procedure that runs the full migration in order */
+--------------------------------------------------------------------------------
+-- 7) Migrate todo
+--------------------------------------------------------------------------------
 IF OBJECT_ID('empanadas_indexadas.sp_migrate_all', 'P') IS NOT NULL
     DROP PROCEDURE empanadas_indexadas.sp_migrate_all;
 GO
@@ -769,22 +756,13 @@ GO
 -- ============================================================================
 -- EJECUTAR MIGRACIÓN
 -- ============================================================================
--- Descomentá la siguiente línea para ejecutar la migración automáticamente
--- después de crear los procedimientos:
 
--- EXEC empanadas_indexadas.sp_migrate_all;
+EXEC empanadas_indexadas.sp_migrate_all;
 
 -- ============================================================================
 
+-- CONSULTAS DE VERIFICACION POST-MIGRACION
 
-/* ==========================
-   Verification queries
-   Ejecutá estas consultas después de correr los procedimientos para validar
-   resultados y detectar filas de `Maestra` que no pudieron relacionarse.
-   No se ejecutan automáticamente: son consultas para ejecutar manualmente.
-   ========================== */
-
--- 1) Conteos por tabla (rápido overview)
 SELECT 'PROVINCIA' AS Tabla, COUNT(*) AS Filas FROM empanadas_indexadas.PROVINCIA;
 SELECT 'LOCALIDAD' AS Tabla, COUNT(*) AS Filas FROM empanadas_indexadas.LOCALIDAD;
 SELECT 'TURNO' AS Tabla, COUNT(*) AS Filas FROM empanadas_indexadas.TURNO;
@@ -810,21 +788,21 @@ SELECT 'ENCUESTA' AS Tabla, COUNT(*) AS Filas FROM empanadas_indexadas.ENCUESTA;
 SELECT 'PREGUNTA_ENCUESTA' AS Tabla, COUNT(*) AS Filas FROM empanadas_indexadas.PREGUNTA_ENCUESTA;
 SELECT 'RESPUESTA_ENCUESTA' AS Tabla, COUNT(*) AS Filas FROM empanadas_indexadas.RESPUESTA_ENCUESTA;
 
--- 2) Evaluaciones de curso que quedaron sin Nro_inscripcion resuelto
+-- 2) Evaluaciones de curso sin Nro_inscripcion
 SELECT m.*
 FROM GD2C2025.gd_esquema.Maestra m
 LEFT JOIN empanadas_indexadas.INSCRIPCION ins ON ins.Legajo_Alumno = m.Alumno_Legajo AND ins.Cod_Curso = m.Curso_Codigo
 WHERE m.Evaluacion_Curso_Nota IS NOT NULL
   AND COALESCE(m.Inscripcion_Numero, ins.Nro_Inscripcion) IS NULL;
 
--- 3) Trabajos prácticos que quedaron sin Nro_inscripcion resuelto
+-- 3) Trabajos prácticos sin Nro_inscripcion
 SELECT m.*
 FROM GD2C2025.gd_esquema.Maestra m
 LEFT JOIN empanadas_indexadas.INSCRIPCION ins ON ins.Legajo_Alumno = m.Alumno_Legajo AND ins.Cod_Curso = m.Curso_Codigo
 WHERE m.Trabajo_Practico_Nota IS NOT NULL
   AND COALESCE(m.Inscripcion_Numero, ins.Nro_Inscripcion) IS NULL;
 
--- 4) Evaluaciones finales que quedaron sin Nro_inscripcionFinal resuelto
+-- 4) Evaluaciones finales sin Nro_inscripcionFinal
 SELECT m.*
 FROM GD2C2025.gd_esquema.Maestra m
 LEFT JOIN empanadas_indexadas.EXAMEN_FINAL ef ON ef.Cod_Curso = m.Curso_Codigo AND ef.Fecha = m.Examen_Final_Fecha AND ISNULL(TRIM(ef.Hora),'') = ISNULL(TRIM(m.Examen_Final_Hora),'')
@@ -832,7 +810,7 @@ LEFT JOIN empanadas_indexadas.INSCRIPCION_FINAL inf ON inf.Legajo_Alumno = m.Alu
 WHERE m.Evaluacion_Final_Nota IS NOT NULL
   AND COALESCE(m.Inscripcion_Final_Nro, inf.Nro_inscripcionFinal) IS NULL;
 
--- 5) Inscripciones esperadas en INSCRIPCION que no fueron creadas (ejemplo: legajo+curso sin inscripcion)
+-- 5) Inscripciones esperadas en INSCRIPCION que no fueron creadas
 SELECT DISTINCT m.Alumno_Legajo, m.Curso_Codigo
 FROM GD2C2025.gd_esquema.Maestra m
 LEFT JOIN empanadas_indexadas.INSCRIPCION ins ON ins.Legajo_Alumno = m.Alumno_Legajo AND ins.Cod_Curso = m.Curso_Codigo
@@ -856,4 +834,3 @@ SELECT DISTINCT m.Alumno_Legajo, m.Alumno_Dni, m.Alumno_Nombre, m.Alumno_Apellid
 FROM GD2C2025.gd_esquema.Maestra m
 LEFT JOIN empanadas_indexadas.ALUMNO a ON a.Legajo_Alumno = m.Alumno_Legajo OR (a.Dni = m.Alumno_Dni AND m.Alumno_Dni IS NOT NULL)
 WHERE m.Alumno_Legajo IS NOT NULL OR m.Alumno_Dni IS NOT NULL;
-
