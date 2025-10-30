@@ -788,7 +788,7 @@ SELECT 'PAGO' AS Tabla, COUNT(*) AS Filas FROM empanadas_indexadas.PAGO;
 SELECT 'ENCUESTA' AS Tabla, COUNT(*) AS Filas FROM empanadas_indexadas.ENCUESTA;
 SELECT 'PREGUNTA_ENCUESTA' AS Tabla, COUNT(*) AS Filas FROM empanadas_indexadas.PREGUNTA_ENCUESTA;
 SELECT 'RESPUESTA_ENCUESTA' AS Tabla, COUNT(*) AS Filas FROM empanadas_indexadas.RESPUESTA_ENCUESTA;
-
+/*
 -- 2) Evaluaciones de curso sin Nro_inscripcion
 SELECT m.*
 FROM GD2C2025.gd_esquema.Maestra m
@@ -835,3 +835,4 @@ SELECT DISTINCT m.Alumno_Legajo, m.Alumno_Dni, m.Alumno_Nombre, m.Alumno_Apellid
 FROM GD2C2025.gd_esquema.Maestra m
 LEFT JOIN empanadas_indexadas.ALUMNO a ON a.Legajo_Alumno = m.Alumno_Legajo OR (a.Dni = m.Alumno_Dni AND m.Alumno_Dni IS NOT NULL)
 WHERE m.Alumno_Legajo IS NOT NULL OR m.Alumno_Dni IS NOT NULL;
+*/
