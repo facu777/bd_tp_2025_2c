@@ -1,0 +1,179 @@
+---
+title: Modelo BI - Empanadas Indexadas (Esquema Estrella)
+---
+erDiagram
+    %% ========================================================================
+    %% DIMENSIONES (8 tablas)
+    %% ========================================================================
+
+    BI_DIM_TIEMPO {
+        int Tiempo_Key PK
+        date Fecha UK
+        int Anio
+        tinyint Cuatrimestre
+        tinyint Mes
+        nvarchar Mes_Nombre
+    }
+
+    BI_DIM_SEDE {
+        int Sede_Key PK
+        bigint ID_Sede
+        nvarchar Sede_Nombre
+        nvarchar Institucion_Nombre
+        nvarchar Localidad_Nombre
+        nvarchar Provincia_Nombre
+    }
+
+    BI_DIM_RANGO_ETARIO_ALUMNO {
+        tinyint Rango_Etario_Alumno_Key PK
+        nvarchar Rango_Descripcion
+        int Edad_Minima
+        int Edad_Maxima
+    }
+
+    BI_DIM_RANGO_ETARIO_PROFESOR {
+        tinyint Rango_Etario_Profesor_Key PK
+        nvarchar Rango_Descripcion
+        int Edad_Minima
+        int Edad_Maxima
+    }
+
+    BI_DIM_TURNO {
+        tinyint Turno_Key PK
+        tinyint ID_Turno
+        nvarchar Turno_Nombre
+    }
+
+    BI_DIM_CATEGORIA {
+        tinyint Categoria_Key PK
+        tinyint ID_Categoria
+        nvarchar Categoria_Nombre
+    }
+
+    BI_DIM_MEDIO_PAGO {
+        int MedioPago_Key PK
+        bigint ID_MedioPago
+        nvarchar Medio_Descripcion
+    }
+
+    BI_DIM_SATISFACCION {
+        tinyint Satisfaccion_Key PK
+        nvarchar Bloque_Descripcion
+        tinyint Nota_Minima
+        tinyint Nota_Maxima
+    }
+
+    %% ========================================================================
+    %% HECHOS (5 tablas en el centro del esquema estrella)
+    %% ========================================================================
+
+    BI_FACT_INSCRIPCION {
+        bigint Fact_Inscripcion_Key PK
+        int Tiempo_Inscripcion_Key FK
+        int Tiempo_Respuesta_Key FK
+        int Sede_Key FK
+        tinyint Categoria_Key FK
+        tinyint Turno_Key FK
+        tinyint Rango_Etario_Alumno_Key FK
+        int Cantidad_Inscripciones
+        int Inscripciones_Aprobadas
+        int Inscripciones_Rechazadas
+        int Inscripciones_Pendientes
+        int Dias_Hasta_Respuesta
+        decimal Precio_Mensual
+    }
+
+    BI_FACT_EVALUACION_CURSO {
+        bigint Fact_Evaluacion_Key PK
+        int Tiempo_Evaluacion_Key FK
+        int Sede_Key FK
+        tinyint Categoria_Key FK
+        tinyint Rango_Etario_Alumno_Key FK
+        int Cantidad_Evaluaciones
+        bigint Nota
+        bit Presente
+        bit Aprobado
+    }
+
+    BI_FACT_EVALUACION_FINAL {
+        bigint Fact_Final_Key PK
+        int Tiempo_Inscripcion_Key FK
+        int Tiempo_Evaluacion_Key FK
+        int Tiempo_Inicio_Curso_Key FK
+        int Sede_Key FK
+        tinyint Categoria_Key FK
+        tinyint Rango_Etario_Alumno_Key FK
+        int Cantidad_Inscripciones_Final
+        bigint Nota
+        bit Presente
+        bit Aprobado
+        int Dias_Inicio_Curso_A_Final
+    }
+
+    BI_FACT_PAGO {
+        bigint Fact_Pago_Key PK
+        int Tiempo_Emision_Key FK
+        int Tiempo_Vencimiento_Key FK
+        int Tiempo_Pago_Key FK
+        int Sede_Key FK
+        tinyint Categoria_Key FK
+        int MedioPago_Key FK
+        decimal Importe_Factura
+        decimal Importe_Pagado
+        bit Pago_En_Termino
+        int Dias_Fuera_Termino
+        bit Factura_Pagada
+    }
+
+    BI_FACT_ENCUESTA {
+        bigint Fact_Encuesta_Key PK
+        int Tiempo_Key FK
+        int Sede_Key FK
+        tinyint Categoria_Key FK
+        tinyint Rango_Etario_Profesor_Key FK
+        tinyint Satisfaccion_Key FK
+        int Cantidad_Respuestas
+        bigint Nota
+    }
+
+    %% ========================================================================
+    %% RELACIONES - ESQUEMA ESTRELLA
+    %% Cada hecho se relaciona con múltiples dimensiones
+    %% ========================================================================
+
+    %% FACT_INSCRIPCION conecta con 6 dimensiones
+    BI_DIM_TIEMPO ||--o{ BI_FACT_INSCRIPCION : "Tiempo_Inscripcion"
+    BI_DIM_TIEMPO ||--o{ BI_FACT_INSCRIPCION : "Tiempo_Respuesta"
+    BI_DIM_SEDE ||--o{ BI_FACT_INSCRIPCION : "Sede"
+    BI_DIM_CATEGORIA ||--o{ BI_FACT_INSCRIPCION : "Categoria"
+    BI_DIM_TURNO ||--o{ BI_FACT_INSCRIPCION : "Turno"
+    BI_DIM_RANGO_ETARIO_ALUMNO ||--o{ BI_FACT_INSCRIPCION : "Rango_Etario"
+
+    %% FACT_EVALUACION_CURSO conecta con 4 dimensiones
+    BI_DIM_TIEMPO ||--o{ BI_FACT_EVALUACION_CURSO : "Tiempo_Evaluacion"
+    BI_DIM_SEDE ||--o{ BI_FACT_EVALUACION_CURSO : "Sede"
+    BI_DIM_CATEGORIA ||--o{ BI_FACT_EVALUACION_CURSO : "Categoria"
+    BI_DIM_RANGO_ETARIO_ALUMNO ||--o{ BI_FACT_EVALUACION_CURSO : "Rango_Etario"
+
+    %% FACT_EVALUACION_FINAL conecta con 4 dimensiones (TIEMPO x3 roles)
+    BI_DIM_TIEMPO ||--o{ BI_FACT_EVALUACION_FINAL : "Tiempo_Inscripcion"
+    BI_DIM_TIEMPO ||--o{ BI_FACT_EVALUACION_FINAL : "Tiempo_Evaluacion"
+    BI_DIM_TIEMPO ||--o{ BI_FACT_EVALUACION_FINAL : "Tiempo_Inicio_Curso"
+    BI_DIM_SEDE ||--o{ BI_FACT_EVALUACION_FINAL : "Sede"
+    BI_DIM_CATEGORIA ||--o{ BI_FACT_EVALUACION_FINAL : "Categoria"
+    BI_DIM_RANGO_ETARIO_ALUMNO ||--o{ BI_FACT_EVALUACION_FINAL : "Rango_Etario"
+
+    %% FACT_PAGO conecta con 5 dimensiones (TIEMPO x3 roles)
+    BI_DIM_TIEMPO ||--o{ BI_FACT_PAGO : "Tiempo_Emision"
+    BI_DIM_TIEMPO ||--o{ BI_FACT_PAGO : "Tiempo_Vencimiento"
+    BI_DIM_TIEMPO ||--o{ BI_FACT_PAGO : "Tiempo_Pago"
+    BI_DIM_SEDE ||--o{ BI_FACT_PAGO : "Sede"
+    BI_DIM_CATEGORIA ||--o{ BI_FACT_PAGO : "Categoria"
+    BI_DIM_MEDIO_PAGO ||--o{ BI_FACT_PAGO : "Medio_Pago"
+
+    %% FACT_ENCUESTA conecta con 5 dimensiones
+    BI_DIM_TIEMPO ||--o{ BI_FACT_ENCUESTA : "Tiempo"
+    BI_DIM_SEDE ||--o{ BI_FACT_ENCUESTA : "Sede"
+    BI_DIM_CATEGORIA ||--o{ BI_FACT_ENCUESTA : "Categoria"
+    BI_DIM_RANGO_ETARIO_PROFESOR ||--o{ BI_FACT_ENCUESTA : "Rango_Etario_Profesor"
+    BI_DIM_SATISFACCION ||--o{ BI_FACT_ENCUESTA : "Bloque_Satisfaccion"
