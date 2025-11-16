@@ -554,24 +554,32 @@ BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        -- Evaluacion curso
+        -- Evaluacion curso (CORREGIDO)
+        -- Insertar evaluaciones para todas las inscripciones con datos de evaluación
         INSERT INTO empanadas_indexadas.EVALUACION_CURSO (Nro_inscripcion, ID_Modulo, FechaEvaluacion, Nota, Presente, Instancia)
-        SELECT DISTINCT COALESCE(m.Inscripcion_Numero, ins.Nro_Inscripcion) AS Resolved_Nro,
+        SELECT DISTINCT
+            COALESCE(m.Inscripcion_Numero, ins.Nro_Inscripcion) AS Resolved_Nro,
             mo.ID_Modulo,
             m.Evaluacion_Curso_fechaEvaluacion,
-            m.Evaluacion_Curso_Nota,
-            m.Evaluacion_Curso_Presente,
+            COALESCE(m.Evaluacion_Curso_Nota, 0) AS Nota,  -- 0 si es NULL
+            COALESCE(m.Evaluacion_Curso_Presente, 0) AS Presente,
             m.Evaluacion_Curso_Instancia
         FROM GD2C2025.gd_esquema.Maestra m
-        LEFT JOIN empanadas_indexadas.INSCRIPCION ins ON ins.Legajo_Alumno = m.Alumno_Legajo AND ins.Cod_Curso = m.Curso_Codigo
-        LEFT JOIN empanadas_indexadas.MODULO mo ON mo.Nombre = TRIM(m.Modulo_Nombre) AND mo.ID_Curso = m.Curso_Codigo
-        WHERE m.Evaluacion_Curso_Nota IS NOT NULL
-          AND COALESCE(m.Inscripcion_Numero, ins.Nro_Inscripcion) IS NOT NULL
+        INNER JOIN empanadas_indexadas.INSCRIPCION ins
+            ON ins.Legajo_Alumno = m.Alumno_Legajo
+            AND ins.Cod_Curso = m.Curso_Codigo
+        LEFT JOIN empanadas_indexadas.MODULO mo
+            ON mo.Nombre = TRIM(m.Modulo_Nombre)
+            AND mo.ID_Curso = m.Curso_Codigo
+        WHERE COALESCE(m.Inscripcion_Numero, ins.Nro_Inscripcion) IS NOT NULL
+          AND (m.Evaluacion_Curso_Nota IS NOT NULL
+               OR m.Evaluacion_Curso_fechaEvaluacion IS NOT NULL
+               OR m.Evaluacion_Curso_Presente IS NOT NULL)  -- Cualquier dato de evaluación
           AND NOT EXISTS (
               SELECT 1 FROM empanadas_indexadas.EVALUACION_CURSO ec
               WHERE ec.Nro_inscripcion = COALESCE(m.Inscripcion_Numero, ins.Nro_Inscripcion)
-                AND ec.FechaEvaluacion = m.Evaluacion_Curso_fechaEvaluacion
-                AND ec.Nota = m.Evaluacion_Curso_Nota
+                AND ISNULL(ec.FechaEvaluacion, '1900-01-01') = ISNULL(m.Evaluacion_Curso_fechaEvaluacion, '1900-01-01')
+                AND ISNULL(ec.Instancia, 0) = ISNULL(m.Evaluacion_Curso_Instancia, 0)
           );
 
         -- Trabajo practico
@@ -619,45 +627,93 @@ BEGIN
               AND NOT EXISTS (SELECT 1 FROM empanadas_indexadas.INSCRIPCION_FINAL inf WHERE inf.Legajo_Alumno = m.Alumno_Legajo AND inf.ID_ExamenFinal = ef.ID_ExamenFinal);
         END
 
-        -- Evaluacion final
+        -- Evaluacion final (CORREGIDO)
+        -- Insertar evaluación para CADA inscripción final
         INSERT INTO empanadas_indexadas.EVALUACION_FINAL (Nro_inscripcionFinal, ID_Profesor, Nota, Presente)
-        SELECT DISTINCT COALESCE(m.Inscripcion_Final_Nro, inf.Nro_inscripcionFinal) AS Resolved_Nro,
+        SELECT DISTINCT
+            COALESCE(m.Inscripcion_Final_Nro, inf.Nro_inscripcionFinal) AS Resolved_Nro,
             p.ID_Profesor,
-            m.Evaluacion_Final_Nota,
-            m.Evaluacion_Final_Presente
+            COALESCE(m.Evaluacion_Final_Nota, 0) AS Nota,  -- 0 si es NULL
+            COALESCE(m.Evaluacion_Final_Presente, 0) AS Presente
         FROM GD2C2025.gd_esquema.Maestra m
-        LEFT JOIN empanadas_indexadas.PROFESOR p ON p.Dni = TRIM(m.Profesor_Dni)
-        LEFT JOIN empanadas_indexadas.EXAMEN_FINAL ef ON ef.Cod_Curso = m.Curso_Codigo AND ef.Fecha = m.Examen_Final_Fecha AND ISNULL(TRIM(ef.Hora),'') = ISNULL(TRIM(m.Examen_Final_Hora),'')
-        LEFT JOIN empanadas_indexadas.INSCRIPCION_FINAL inf ON inf.Legajo_Alumno = m.Alumno_Legajo AND inf.ID_ExamenFinal = ef.ID_ExamenFinal
-        WHERE m.Evaluacion_Final_Nota IS NOT NULL
-          AND COALESCE(m.Inscripcion_Final_Nro, inf.Nro_inscripcionFinal) IS NOT NULL
-          AND NOT EXISTS (SELECT 1 FROM empanadas_indexadas.EVALUACION_FINAL ef2 WHERE ef2.Nro_inscripcionFinal = COALESCE(m.Inscripcion_Final_Nro, inf.Nro_inscripcionFinal) AND ef2.Nota = m.Evaluacion_Final_Nota AND ef2.ID_Profesor = p.ID_Profesor);
+        LEFT JOIN empanadas_indexadas.PROFESOR p
+            ON p.Dni = TRIM(m.Profesor_Dni)
+        LEFT JOIN empanadas_indexadas.EXAMEN_FINAL ef
+            ON ef.Cod_Curso = m.Curso_Codigo
+            AND ef.Fecha = m.Examen_Final_Fecha
+            AND ISNULL(TRIM(ef.Hora),'') = ISNULL(TRIM(m.Examen_Final_Hora),'')
+        INNER JOIN empanadas_indexadas.INSCRIPCION_FINAL inf
+            ON inf.Legajo_Alumno = m.Alumno_Legajo
+            AND inf.ID_ExamenFinal = ef.ID_ExamenFinal
+        WHERE COALESCE(m.Inscripcion_Final_Nro, inf.Nro_inscripcionFinal) IS NOT NULL
+          AND (m.Evaluacion_Final_Nota IS NOT NULL
+               OR m.Evaluacion_Final_Presente IS NOT NULL)  -- Cualquier dato de evaluación
+          AND NOT EXISTS (
+              SELECT 1 FROM empanadas_indexadas.EVALUACION_FINAL ef2
+              WHERE ef2.Nro_inscripcionFinal = COALESCE(m.Inscripcion_Final_Nro, inf.Nro_inscripcionFinal)
+          );
 
-        -- Facturas, Detalles y Pagos
+        -- Facturas, Detalles y Pagos (CORREGIDO)
+        -- Primero insertar FACTURAS únicas
         IF EXISTS (SELECT 1 FROM sys.columns WHERE [object_id] = OBJECT_ID(N'empanadas_indexadas.FACTURA') AND name = 'Nro_Factura')
         BEGIN
             SET IDENTITY_INSERT empanadas_indexadas.FACTURA ON;
             INSERT INTO empanadas_indexadas.FACTURA (Nro_Factura, Legajo_Alumno, FechaEmision, FechaVencimiento, Total)
-            SELECT DISTINCT m.Factura_Numero, m.Alumno_Legajo, m.Factura_FechaEmision, m.Factura_FechaVencimiento, m.Factura_Total
+            SELECT DISTINCT
+                m.Factura_Numero,
+                m.Alumno_Legajo,
+                m.Factura_FechaEmision,
+                m.Factura_FechaVencimiento,
+                m.Factura_Total
             FROM GD2C2025.gd_esquema.Maestra m
             WHERE m.Factura_Numero IS NOT NULL
-              AND NOT EXISTS (SELECT 1 FROM empanadas_indexadas.FACTURA f WHERE f.Nro_Factura = m.Factura_Numero);
+              AND m.Alumno_Legajo IS NOT NULL
+              AND NOT EXISTS (
+                  SELECT 1 FROM empanadas_indexadas.FACTURA f
+                  WHERE f.Nro_Factura = m.Factura_Numero
+              );
             SET IDENTITY_INSERT empanadas_indexadas.FACTURA OFF;
         END
         ELSE
         BEGIN
+            -- Si no hay columna Nro_Factura, agrupar por alumno+fecha
             INSERT INTO empanadas_indexadas.FACTURA (Legajo_Alumno, FechaEmision, FechaVencimiento, Total)
-            SELECT DISTINCT m.Alumno_Legajo, m.Factura_FechaEmision, m.Factura_FechaVencimiento, m.Factura_Total
+            SELECT DISTINCT
+                m.Alumno_Legajo,
+                m.Factura_FechaEmision,
+                m.Factura_FechaVencimiento,
+                m.Factura_Total
             FROM GD2C2025.gd_esquema.Maestra m
             WHERE m.Alumno_Legajo IS NOT NULL
-              AND NOT EXISTS (SELECT 1 FROM empanadas_indexadas.FACTURA f WHERE f.Legajo_Alumno = m.Alumno_Legajo AND f.FechaEmision = m.Factura_FechaEmision);
+              AND m.Factura_FechaEmision IS NOT NULL
+              AND NOT EXISTS (
+                  SELECT 1 FROM empanadas_indexadas.FACTURA f
+                  WHERE f.Legajo_Alumno = m.Alumno_Legajo
+                    AND f.FechaEmision = m.Factura_FechaEmision
+              );
         END
 
+        -- Insertar DETALLES si existe la factura
         INSERT INTO empanadas_indexadas.DETALLE_FACTURA (Nro_Factura, Cod_Curso, PeriodoAnio, PeriodoMes, Importe)
-        SELECT DISTINCT m.Factura_Numero, m.Curso_Codigo, m.Periodo_Anio, m.Periodo_Mes, m.Detalle_Factura_Importe
+        SELECT DISTINCT
+            f.Nro_Factura,  -- Usar el ID generado de la tabla FACTURA
+            m.Curso_Codigo,
+            m.Periodo_Anio,
+            m.Periodo_Mes,
+            m.Detalle_Factura_Importe
         FROM GD2C2025.gd_esquema.Maestra m
+        INNER JOIN empanadas_indexadas.FACTURA f
+            ON f.Nro_Factura = m.Factura_Numero  -- Match por número de factura
         WHERE m.Factura_Numero IS NOT NULL
-          AND NOT EXISTS (SELECT 1 FROM empanadas_indexadas.DETALLE_FACTURA df WHERE df.Nro_Factura = m.Factura_Numero AND df.Cod_Curso = m.Curso_Codigo AND df.Importe = m.Detalle_Factura_Importe);
+          AND m.Curso_Codigo IS NOT NULL
+          AND m.Detalle_Factura_Importe IS NOT NULL
+          AND NOT EXISTS (
+              SELECT 1 FROM empanadas_indexadas.DETALLE_FACTURA df
+              WHERE df.Nro_Factura = f.Nro_Factura
+                AND df.Cod_Curso = m.Curso_Codigo
+                AND ISNULL(df.PeriodoAnio, 0) = ISNULL(m.Periodo_Anio, 0)
+                AND ISNULL(df.PeriodoMes, 0) = ISNULL(m.Periodo_Mes, 0)
+          );
 
         INSERT INTO empanadas_indexadas.PAGO (Nro_Factura, ID_MedioPago, Fecha, Importe)
         SELECT DISTINCT m.Factura_Numero, mp.ID_MedioPago, m.Pago_Fecha, m.Pago_Importe
