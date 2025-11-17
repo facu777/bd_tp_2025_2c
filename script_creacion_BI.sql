@@ -634,71 +634,53 @@ GO
 GO
 CREATE VIEW empanadas_indexadas.BI_V_Desempeno_Cursada_Completa_Sede AS
 SELECT
-    YEAR(c.Curso_Fecha_Inicio) AS Anio,
-    s.Sede_Nombre,
-    COUNT(DISTINCT i.Inscripcion_Id) AS Total_Alumnos_Cursada,
+    YEAR(c.FechaInicio) AS Anio,
+    s.Nombre AS Sede_Nombre,
+    COUNT(DISTINCT i.Nro_Inscripcion) AS Total_Alumnos_Cursada,
     SUM(CASE
         WHEN NOT EXISTS (
             SELECT 1
-            FROM empanadas_indexadas.Evaluacion_Curso ec
-            WHERE ec.Curso_Id = c.Curso_Id
-              AND ec.Alumno_Id = a.Alumno_Id
+            FROM empanadas_indexadas.EVALUACION_CURSO ec
+            WHERE ec.Nro_inscripcion = i.Nro_Inscripcion
               AND ec.Presente = 1
               AND (ec.Nota < 4 OR ec.Nota IS NULL)
         )
-        AND NOT EXISTS (
-            SELECT 1
-            FROM empanadas_indexadas.Evaluacion_TP etp
-            WHERE etp.Curso_Id = c.Curso_Id
-              AND etp.Alumno_Id = a.Alumno_Id
-              AND (etp.Nota < 4 OR etp.Nota IS NULL)
-        )
         AND EXISTS (
             SELECT 1
-            FROM empanadas_indexadas.Evaluacion_Curso ec2
-            WHERE ec2.Curso_Id = c.Curso_Id
-              AND ec2.Alumno_Id = a.Alumno_Id
+            FROM empanadas_indexadas.EVALUACION_CURSO ec2
+            WHERE ec2.Nro_inscripcion = i.Nro_Inscripcion
               AND ec2.Presente = 1
         )
         THEN 1
         ELSE 0
     END) AS Total_Cursadas_Aprobadas,
     CASE
-        WHEN COUNT(DISTINCT i.Inscripcion_Id) > 0
+        WHEN COUNT(DISTINCT i.Nro_Inscripcion) > 0
         THEN (SUM(CASE
             WHEN NOT EXISTS (
                 SELECT 1
-                FROM empanadas_indexadas.Evaluacion_Curso ec
-                WHERE ec.Curso_Id = c.Curso_Id
-                  AND ec.Alumno_Id = a.Alumno_Id
+                FROM empanadas_indexadas.EVALUACION_CURSO ec
+                WHERE ec.Nro_inscripcion = i.Nro_Inscripcion
                   AND ec.Presente = 1
                   AND (ec.Nota < 4 OR ec.Nota IS NULL)
             )
-            AND NOT EXISTS (
-                SELECT 1
-                FROM empanadas_indexadas.Evaluacion_TP etp
-                WHERE etp.Curso_Id = c.Curso_Id
-                  AND etp.Alumno_Id = a.Alumno_Id
-                  AND (etp.Nota < 4 OR etp.Nota IS NULL)
-            )
             AND EXISTS (
                 SELECT 1
-                FROM empanadas_indexadas.Evaluacion_Curso ec2
-                WHERE ec2.Curso_Id = c.Curso_Id
-                  AND ec2.Alumno_Id = a.Alumno_Id
+                FROM empanadas_indexadas.EVALUACION_CURSO ec2
+                WHERE ec2.Nro_inscripcion = i.Nro_Inscripcion
                   AND ec2.Presente = 1
             )
             THEN 1
             ELSE 0
-        END) * 100.0) / COUNT(DISTINCT i.Inscripcion_Id)
+        END) * 100.0) / COUNT(DISTINCT i.Nro_Inscripcion)
         ELSE 0
     END AS Porcentaje_Aprobacion_Cursada_Completa
-FROM empanadas_indexadas.Inscripcion i
-INNER JOIN empanadas_indexadas.Alumno a ON i.Alumno_Id = a.Alumno_Id
-INNER JOIN empanadas_indexadas.Curso c ON i.Curso_Id = c.Curso_Id
-INNER JOIN empanadas_indexadas.Sede s ON c.Sede_Id = s.Sede_Id
-WHERE i.Estado_Id = 2  -- Solo inscripciones aprobadas
-GROUP BY YEAR(c.Curso_Fecha_Inicio), s.Sede_Nombre;
+FROM empanadas_indexadas.INSCRIPCION i
+INNER JOIN empanadas_indexadas.ALUMNO a ON i.Legajo_Alumno = a.Legajo_Alumno
+INNER JOIN empanadas_indexadas.CURSO c ON i.Cod_Curso = c.Cod_Curso
+INNER JOIN empanadas_indexadas.SEDE s ON c.ID_Sede = s.ID_Sede
+WHERE i.Estado = 'Aprobada'  -- Solo inscripciones aprobadas
+GROUP BY YEAR(c.FechaInicio), s.Nombre;
 GO
 
 -- VISTA 4: Tiempo promedio de finalización de curso
