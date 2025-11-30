@@ -10,34 +10,58 @@ GO
 -- ============================================================================
 
 -- Drops de vistas
-DROP VIEW IF EXISTS empanadas_indexadas.BI_V_Categorias_Turnos_Mas_Solicitados;
-DROP VIEW IF EXISTS empanadas_indexadas.BI_V_Tasa_Rechazo_Inscripciones;
-DROP VIEW IF EXISTS empanadas_indexadas.BI_V_Desempeno_Cursada_Sede;
-DROP VIEW IF EXISTS empanadas_indexadas.BI_V_Desempeno_Cursada_Completa_Sede;
-DROP VIEW IF EXISTS empanadas_indexadas.BI_V_Tiempo_Finalizacion_Curso;
-DROP VIEW IF EXISTS empanadas_indexadas.BI_V_Nota_Promedio_Finales;
-DROP VIEW IF EXISTS empanadas_indexadas.BI_V_Tasa_Ausentismo_Finales;
-DROP VIEW IF EXISTS empanadas_indexadas.BI_V_Desvio_Pagos;
-DROP VIEW IF EXISTS empanadas_indexadas.BI_V_Tasa_Morosidad;
-DROP VIEW IF EXISTS empanadas_indexadas.BI_V_Ingresos_Por_Categoria;
-DROP VIEW IF EXISTS empanadas_indexadas.BI_V_Indice_Satisfaccion;
+IF OBJECT_ID('empanadas_indexadas.BI_V_Categorias_Turnos_Mas_Solicitados', 'V') IS NOT NULL
+    DROP VIEW empanadas_indexadas.BI_V_Categorias_Turnos_Mas_Solicitados;
+IF OBJECT_ID('empanadas_indexadas.BI_V_Tasa_Rechazo_Inscripciones', 'V') IS NOT NULL
+    DROP VIEW empanadas_indexadas.BI_V_Tasa_Rechazo_Inscripciones;
+IF OBJECT_ID('empanadas_indexadas.BI_V_Desempeno_Cursada_Sede', 'V') IS NOT NULL
+    DROP VIEW empanadas_indexadas.BI_V_Desempeno_Cursada_Sede;
+IF OBJECT_ID('empanadas_indexadas.BI_V_Desempeno_Cursada_Completa_Sede', 'V') IS NOT NULL
+    DROP VIEW empanadas_indexadas.BI_V_Desempeno_Cursada_Completa_Sede;
+IF OBJECT_ID('empanadas_indexadas.BI_V_Tiempo_Finalizacion_Curso', 'V') IS NOT NULL
+    DROP VIEW empanadas_indexadas.BI_V_Tiempo_Finalizacion_Curso;
+IF OBJECT_ID('empanadas_indexadas.BI_V_Nota_Promedio_Finales', 'V') IS NOT NULL
+    DROP VIEW empanadas_indexadas.BI_V_Nota_Promedio_Finales;
+IF OBJECT_ID('empanadas_indexadas.BI_V_Tasa_Ausentismo_Finales', 'V') IS NOT NULL
+    DROP VIEW empanadas_indexadas.BI_V_Tasa_Ausentismo_Finales;
+IF OBJECT_ID('empanadas_indexadas.BI_V_Desvio_Pagos', 'V') IS NOT NULL
+    DROP VIEW empanadas_indexadas.BI_V_Desvio_Pagos;
+IF OBJECT_ID('empanadas_indexadas.BI_V_Tasa_Morosidad', 'V') IS NOT NULL
+    DROP VIEW empanadas_indexadas.BI_V_Tasa_Morosidad;
+IF OBJECT_ID('empanadas_indexadas.BI_V_Ingresos_Por_Categoria', 'V') IS NOT NULL
+    DROP VIEW empanadas_indexadas.BI_V_Ingresos_Por_Categoria;
+IF OBJECT_ID('empanadas_indexadas.BI_V_Indice_Satisfaccion', 'V') IS NOT NULL
+    DROP VIEW empanadas_indexadas.BI_V_Indice_Satisfaccion;
 
 -- Drops de tablas de hechos
-DROP TABLE IF EXISTS empanadas_indexadas.BI_FACT_ENCUESTA;
-DROP TABLE IF EXISTS empanadas_indexadas.BI_FACT_PAGO;
-DROP TABLE IF EXISTS empanadas_indexadas.BI_FACT_EVALUACION_FINAL;
-DROP TABLE IF EXISTS empanadas_indexadas.BI_FACT_EVALUACION_CURSO;
-DROP TABLE IF EXISTS empanadas_indexadas.BI_FACT_INSCRIPCION;
+IF OBJECT_ID('empanadas_indexadas.BI_FACT_ENCUESTA', 'U') IS NOT NULL
+    DROP TABLE empanadas_indexadas.BI_FACT_ENCUESTA;
+IF OBJECT_ID('empanadas_indexadas.BI_FACT_PAGO', 'U') IS NOT NULL
+    DROP TABLE empanadas_indexadas.BI_FACT_PAGO;
+IF OBJECT_ID('empanadas_indexadas.BI_FACT_EVALUACION_FINAL', 'U') IS NOT NULL
+    DROP TABLE empanadas_indexadas.BI_FACT_EVALUACION_FINAL;
+IF OBJECT_ID('empanadas_indexadas.BI_FACT_EVALUACION_CURSO', 'U') IS NOT NULL
+    DROP TABLE empanadas_indexadas.BI_FACT_EVALUACION_CURSO;
+IF OBJECT_ID('empanadas_indexadas.BI_FACT_INSCRIPCION', 'U') IS NOT NULL
+    DROP TABLE empanadas_indexadas.BI_FACT_INSCRIPCION;
 
 -- Drops de dimensiones
-DROP TABLE IF EXISTS empanadas_indexadas.BI_DIM_SATISFACCION;
-DROP TABLE IF EXISTS empanadas_indexadas.BI_DIM_MEDIO_PAGO;
-DROP TABLE IF EXISTS empanadas_indexadas.BI_DIM_CATEGORIA;
-DROP TABLE IF EXISTS empanadas_indexadas.BI_DIM_TURNO;
-DROP TABLE IF EXISTS empanadas_indexadas.BI_DIM_RANGO_ETARIO_PROFESOR;
-DROP TABLE IF EXISTS empanadas_indexadas.BI_DIM_RANGO_ETARIO_ALUMNO;
-DROP TABLE IF EXISTS empanadas_indexadas.BI_DIM_SEDE;
-DROP TABLE IF EXISTS empanadas_indexadas.BI_DIM_TIEMPO;
+IF OBJECT_ID('empanadas_indexadas.BI_DIM_SATISFACCION', 'U') IS NOT NULL
+    DROP TABLE empanadas_indexadas.BI_DIM_SATISFACCION;
+IF OBJECT_ID('empanadas_indexadas.BI_DIM_MEDIO_PAGO', 'U') IS NOT NULL
+    DROP TABLE empanadas_indexadas.BI_DIM_MEDIO_PAGO;
+IF OBJECT_ID('empanadas_indexadas.BI_DIM_CATEGORIA', 'U') IS NOT NULL
+    DROP TABLE empanadas_indexadas.BI_DIM_CATEGORIA;
+IF OBJECT_ID('empanadas_indexadas.BI_DIM_TURNO', 'U') IS NOT NULL
+    DROP TABLE empanadas_indexadas.BI_DIM_TURNO;
+IF OBJECT_ID('empanadas_indexadas.BI_DIM_RANGO_ETARIO_PROFESOR', 'U') IS NOT NULL
+    DROP TABLE empanadas_indexadas.BI_DIM_RANGO_ETARIO_PROFESOR;
+IF OBJECT_ID('empanadas_indexadas.BI_DIM_RANGO_ETARIO_ALUMNO', 'U') IS NOT NULL
+    DROP TABLE empanadas_indexadas.BI_DIM_RANGO_ETARIO_ALUMNO;
+IF OBJECT_ID('empanadas_indexadas.BI_DIM_SEDE', 'U') IS NOT NULL
+    DROP TABLE empanadas_indexadas.BI_DIM_SEDE;
+IF OBJECT_ID('empanadas_indexadas.BI_DIM_TIEMPO', 'U') IS NOT NULL
+    DROP TABLE empanadas_indexadas.BI_DIM_TIEMPO;
 
 -- ============================================================================
 -- 2) CREACIÓN DE DIMENSIONES
@@ -138,24 +162,23 @@ INSERT INTO empanadas_indexadas.BI_DIM_SATISFACCION VALUES
 -- ============================================================================
 
 -- FACT: INSCRIPCIONES
+-- Agrupado por Tiempo (fecha inscripción) + Sede + Categoría + Turno + Rango Etario
 CREATE TABLE empanadas_indexadas.BI_FACT_INSCRIPCION (
     Fact_Inscripcion_Key BIGINT PRIMARY KEY IDENTITY(1,1),
-    Tiempo_Inscripcion_Key INT NOT NULL,
-    Tiempo_Respuesta_Key INT NULL,
+    Tiempo_Key INT NOT NULL,
     Sede_Key INT NOT NULL,
     Categoria_Key TINYINT NULL,
     Turno_Key TINYINT NULL,
     Rango_Etario_Alumno_Key TINYINT NULL,
-    -- Métricas
-    Cantidad_Inscripciones INT NOT NULL DEFAULT 1,
+    -- Métricas pre-calculadas
+    Cantidad_Inscripciones INT NOT NULL DEFAULT 0,
     Inscripciones_Aprobadas INT NOT NULL DEFAULT 0,
     Inscripciones_Rechazadas INT NOT NULL DEFAULT 0,
     Inscripciones_Pendientes INT NOT NULL DEFAULT 0,
-    Dias_Hasta_Respuesta INT NULL,
-    Precio_Mensual DECIMAL(18,2) NULL,
+    Dias_Promedio_Hasta_Respuesta DECIMAL(10,2) NULL,
+    Importe_Total_Esperado DECIMAL(18,2) NULL,
     -- FKs
-    FOREIGN KEY (Tiempo_Inscripcion_Key) REFERENCES empanadas_indexadas.BI_DIM_TIEMPO(Tiempo_Key),
-    FOREIGN KEY (Tiempo_Respuesta_Key) REFERENCES empanadas_indexadas.BI_DIM_TIEMPO(Tiempo_Key),
+    FOREIGN KEY (Tiempo_Key) REFERENCES empanadas_indexadas.BI_DIM_TIEMPO(Tiempo_Key),
     FOREIGN KEY (Sede_Key) REFERENCES empanadas_indexadas.BI_DIM_SEDE(Sede_Key),
     FOREIGN KEY (Categoria_Key) REFERENCES empanadas_indexadas.BI_DIM_CATEGORIA(Categoria_Key),
     FOREIGN KEY (Turno_Key) REFERENCES empanadas_indexadas.BI_DIM_TURNO(Turno_Key),
@@ -182,48 +205,46 @@ CREATE TABLE empanadas_indexadas.BI_FACT_EVALUACION_CURSO (
 );
 
 -- FACT: EVALUACIONES FINALES
+-- Agrupado por Tiempo (fecha del final) + Sede + Categoría + Rango Etario
 CREATE TABLE empanadas_indexadas.BI_FACT_EVALUACION_FINAL (
     Fact_Final_Key BIGINT PRIMARY KEY IDENTITY(1,1),
-    Tiempo_Inscripcion_Key INT NOT NULL,
-    Tiempo_Evaluacion_Key INT NULL,
-    Tiempo_Inicio_Curso_Key INT NULL,
+    Tiempo_Key INT NOT NULL,
     Sede_Key INT NOT NULL,
     Categoria_Key TINYINT NULL,
     Rango_Etario_Alumno_Key TINYINT NULL,
     -- Métricas
-    Cantidad_Inscripciones_Final INT NOT NULL DEFAULT 1,
-    Nota BIGINT NULL,
-    Presente BIT NULL,
-    Aprobado BIT NULL, -- Nota >= 4
-    Dias_Inicio_Curso_A_Final INT NULL,
+    Cantidad_Inscripciones_Final INT NOT NULL DEFAULT 0,
+    Cantidad_Presentes INT NOT NULL DEFAULT 0,
+    Cantidad_Ausentes INT NOT NULL DEFAULT 0,
+    Cantidad_Aprobados INT NOT NULL DEFAULT 0,
+    Suma_Notas DECIMAL(18,2) NULL,
+    Nota_Promedio DECIMAL(5,2) NULL,
+    Dias_Promedio_Finalizacion DECIMAL(10,2) NULL,
     -- FKs
-    FOREIGN KEY (Tiempo_Inscripcion_Key) REFERENCES empanadas_indexadas.BI_DIM_TIEMPO(Tiempo_Key),
-    FOREIGN KEY (Tiempo_Evaluacion_Key) REFERENCES empanadas_indexadas.BI_DIM_TIEMPO(Tiempo_Key),
-    FOREIGN KEY (Tiempo_Inicio_Curso_Key) REFERENCES empanadas_indexadas.BI_DIM_TIEMPO(Tiempo_Key),
+    FOREIGN KEY (Tiempo_Key) REFERENCES empanadas_indexadas.BI_DIM_TIEMPO(Tiempo_Key),
     FOREIGN KEY (Sede_Key) REFERENCES empanadas_indexadas.BI_DIM_SEDE(Sede_Key),
     FOREIGN KEY (Categoria_Key) REFERENCES empanadas_indexadas.BI_DIM_CATEGORIA(Categoria_Key),
     FOREIGN KEY (Rango_Etario_Alumno_Key) REFERENCES empanadas_indexadas.BI_DIM_RANGO_ETARIO_ALUMNO(Rango_Etario_Alumno_Key)
 );
 
 -- FACT: PAGOS
+-- Agrupado por Tiempo (fecha emisión factura) + Sede + Categoría + Medio Pago
 CREATE TABLE empanadas_indexadas.BI_FACT_PAGO (
     Fact_Pago_Key BIGINT PRIMARY KEY IDENTITY(1,1),
-    Tiempo_Emision_Key INT NOT NULL,
-    Tiempo_Vencimiento_Key INT NOT NULL,
-    Tiempo_Pago_Key INT NULL,
+    Tiempo_Key INT NOT NULL,
     Sede_Key INT NOT NULL,
     Categoria_Key TINYINT NULL,
     MedioPago_Key INT NULL,
     -- Métricas
-    Importe_Factura DECIMAL(18,2) NOT NULL,
-    Importe_Pagado DECIMAL(18,2) NULL,
-    Pago_En_Termino BIT NULL, -- Si se pagó antes del vencimiento
-    Dias_Fuera_Termino INT NULL,
-    Factura_Pagada BIT NULL,
+    Cantidad_Facturas INT NOT NULL DEFAULT 0,
+    Importe_Total_Facturado DECIMAL(18,2) NOT NULL DEFAULT 0,
+    Importe_Total_Pagado DECIMAL(18,2) NULL DEFAULT 0,
+    Cantidad_Facturas_Pagadas INT NOT NULL DEFAULT 0,
+    Cantidad_Pagos_En_Termino INT NOT NULL DEFAULT 0,
+    Cantidad_Pagos_Fuera_Termino INT NOT NULL DEFAULT 0,
+    Importe_Adeudado DECIMAL(18,2) NULL DEFAULT 0,
     -- FKs
-    FOREIGN KEY (Tiempo_Emision_Key) REFERENCES empanadas_indexadas.BI_DIM_TIEMPO(Tiempo_Key),
-    FOREIGN KEY (Tiempo_Vencimiento_Key) REFERENCES empanadas_indexadas.BI_DIM_TIEMPO(Tiempo_Key),
-    FOREIGN KEY (Tiempo_Pago_Key) REFERENCES empanadas_indexadas.BI_DIM_TIEMPO(Tiempo_Key),
+    FOREIGN KEY (Tiempo_Key) REFERENCES empanadas_indexadas.BI_DIM_TIEMPO(Tiempo_Key),
     FOREIGN KEY (Sede_Key) REFERENCES empanadas_indexadas.BI_DIM_SEDE(Sede_Key),
     FOREIGN KEY (Categoria_Key) REFERENCES empanadas_indexadas.BI_DIM_CATEGORIA(Categoria_Key),
     FOREIGN KEY (MedioPago_Key) REFERENCES empanadas_indexadas.BI_DIM_MEDIO_PAGO(MedioPago_Key)
@@ -255,10 +276,10 @@ CREATE TABLE empanadas_indexadas.BI_FACT_ENCUESTA (
 PRINT 'Iniciando migración del modelo BI...';
 PRINT '';
 
--- 4.1) Poblar DIM_TIEMPO (2020-2026 para cubrir todos los datos)
+-- 4.1) Poblar DIM_TIEMPO (2019-2026)
 PRINT 'Poblando BI_DIM_TIEMPO...';
 WITH Fechas AS (
-    SELECT CAST('2020-01-01' AS DATE) AS Fecha
+    SELECT CAST('2019-01-01' AS DATE) AS Fecha
     UNION ALL
     SELECT DATEADD(DAY, 1, Fecha)
     FROM Fechas
@@ -329,8 +350,7 @@ PRINT '';
 -- 5.1) FACT_INSCRIPCION
 PRINT 'Poblando BI_FACT_INSCRIPCION...';
 INSERT INTO empanadas_indexadas.BI_FACT_INSCRIPCION (
-    Tiempo_Inscripcion_Key,
-    Tiempo_Respuesta_Key,
+    Tiempo_Key,
     Sede_Key,
     Categoria_Key,
     Turno_Key,
@@ -339,12 +359,11 @@ INSERT INTO empanadas_indexadas.BI_FACT_INSCRIPCION (
     Inscripciones_Aprobadas,
     Inscripciones_Rechazadas,
     Inscripciones_Pendientes,
-    Dias_Hasta_Respuesta,
-    Precio_Mensual
+    Dias_Promedio_Hasta_Respuesta,
+    Importe_Total_Esperado
 )
 SELECT
     ti.Tiempo_Key,
-    tr.Tiempo_Key AS Tiempo_Respuesta_Key,
     ds.Sede_Key,
     dc.Categoria_Key,
     dt.Turno_Key,
@@ -354,21 +373,31 @@ SELECT
         WHEN DATEDIFF(YEAR, a.FechaNacimiento, i.FechaInscripcion) BETWEEN 36 AND 50 THEN 3
         ELSE 4
     END AS Rango_Etario_Alumno_Key,
-    1 AS Cantidad_Inscripciones,
-    CASE WHEN i.Estado = 'Aprobada' THEN 1 ELSE 0 END,
-    CASE WHEN i.Estado = 'Rechazada' THEN 1 ELSE 0 END,
-    CASE WHEN i.Estado = 'Pendiente' THEN 1 ELSE 0 END,
-    DATEDIFF(DAY, i.FechaInscripcion, i.FechaRespuesta),
-    c.PrecioMensual
+    COUNT(*) AS Cantidad_Inscripciones,
+    SUM(CASE WHEN i.Estado = 'Confirmada' THEN 1 ELSE 0 END) AS Inscripciones_Aprobadas,
+    SUM(CASE WHEN i.Estado = 'Rechazada' THEN 1 ELSE 0 END) AS Inscripciones_Rechazadas,
+    SUM(CASE WHEN i.Estado = 'Pendiente' THEN 1 ELSE 0 END) AS Inscripciones_Pendientes,
+    AVG(CAST(DATEDIFF(DAY, i.FechaInscripcion, i.FechaRespuesta) AS DECIMAL(10,2))) AS Dias_Promedio_Hasta_Respuesta,
+    SUM(c.PrecioMensual * c.DuracionMeses) AS Importe_Total_Esperado
 FROM empanadas_indexadas.INSCRIPCION i
 INNER JOIN empanadas_indexadas.ALUMNO a ON i.Legajo_Alumno = a.Legajo_Alumno
 INNER JOIN empanadas_indexadas.CURSO c ON i.Cod_Curso = c.Cod_Curso
 INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO ti ON ti.Fecha = CAST(i.FechaInscripcion AS DATE)
-LEFT JOIN empanadas_indexadas.BI_DIM_TIEMPO tr ON tr.Fecha = CAST(i.FechaRespuesta AS DATE)
 INNER JOIN empanadas_indexadas.BI_DIM_SEDE ds ON ds.ID_Sede = c.ID_Sede
 LEFT JOIN empanadas_indexadas.BI_DIM_CATEGORIA dc ON dc.ID_Categoria = c.ID_Categoria
 LEFT JOIN empanadas_indexadas.BI_DIM_TURNO dt ON dt.ID_Turno = c.ID_Turno
-WHERE i.FechaInscripcion IS NOT NULL;
+WHERE i.FechaInscripcion IS NOT NULL
+GROUP BY
+    ti.Tiempo_Key,
+    ds.Sede_Key,
+    dc.Categoria_Key,
+    dt.Turno_Key,
+    CASE
+        WHEN DATEDIFF(YEAR, a.FechaNacimiento, i.FechaInscripcion) < 25 THEN 1
+        WHEN DATEDIFF(YEAR, a.FechaNacimiento, i.FechaInscripcion) BETWEEN 25 AND 35 THEN 2
+        WHEN DATEDIFF(YEAR, a.FechaNacimiento, i.FechaInscripcion) BETWEEN 36 AND 50 THEN 3
+        ELSE 4
+    END;
 
 DECLARE @count_inscripcion INT = @@ROWCOUNT;
 PRINT 'BI_FACT_INSCRIPCION: ' + CAST(@count_inscripcion AS VARCHAR(10)) + ' registros';
@@ -414,22 +443,20 @@ PRINT 'BI_FACT_EVALUACION_CURSO: ' + CAST(@count_eval_curso AS VARCHAR(10)) + ' 
 -- 5.3) FACT_EVALUACION_FINAL
 PRINT 'Poblando BI_FACT_EVALUACION_FINAL...';
 INSERT INTO empanadas_indexadas.BI_FACT_EVALUACION_FINAL (
-    Tiempo_Inscripcion_Key,
-    Tiempo_Evaluacion_Key,
-    Tiempo_Inicio_Curso_Key,
+    Tiempo_Key,
     Sede_Key,
     Categoria_Key,
     Rango_Etario_Alumno_Key,
     Cantidad_Inscripciones_Final,
-    Nota,
-    Presente,
-    Aprobado,
-    Dias_Inicio_Curso_A_Final
+    Cantidad_Presentes,
+    Cantidad_Ausentes,
+    Cantidad_Aprobados,
+    Suma_Notas,
+    Nota_Promedio,
+    Dias_Promedio_Finalizacion
 )
 SELECT
-    ti.Tiempo_Key,
     te.Tiempo_Key,
-    tic.Tiempo_Key,
     ds.Sede_Key,
     dc.Categoria_Key,
     CASE
@@ -438,22 +465,32 @@ SELECT
         WHEN DATEDIFF(YEAR, a.FechaNacimiento, inf.FechaInscripcion) BETWEEN 36 AND 50 THEN 3
         ELSE 4
     END AS Rango_Etario_Alumno_Key,
-    1 AS Cantidad_Inscripciones_Final,
-    ef.Nota,
-    ef.Presente,
-    CASE WHEN ef.Nota >= 4 THEN 1 ELSE 0 END AS Aprobado,
-    DATEDIFF(DAY, c.FechaInicio, ex.Fecha) AS Dias_Inicio_Curso_A_Final
+    COUNT(*) AS Cantidad_Inscripciones_Final,
+    SUM(CASE WHEN ef.Presente = 1 THEN 1 ELSE 0 END) AS Cantidad_Presentes,
+    SUM(CASE WHEN ef.Presente = 0 OR ef.Presente IS NULL THEN 1 ELSE 0 END) AS Cantidad_Ausentes,
+    SUM(CASE WHEN ef.Nota >= 4 AND ef.Presente = 1 THEN 1 ELSE 0 END) AS Cantidad_Aprobados,
+    SUM(CASE WHEN ef.Presente = 1 THEN ef.Nota ELSE 0 END) AS Suma_Notas,
+    AVG(CASE WHEN ef.Presente = 1 THEN CAST(ef.Nota AS DECIMAL(5,2)) ELSE NULL END) AS Nota_Promedio,
+    AVG(CAST(DATEDIFF(DAY, c.FechaInicio, ex.Fecha) AS DECIMAL(10,2))) AS Dias_Promedio_Finalizacion
 FROM empanadas_indexadas.INSCRIPCION_FINAL inf
 INNER JOIN empanadas_indexadas.ALUMNO a ON inf.Legajo_Alumno = a.Legajo_Alumno
 INNER JOIN empanadas_indexadas.EXAMEN_FINAL ex ON inf.ID_ExamenFinal = ex.ID_ExamenFinal
 INNER JOIN empanadas_indexadas.CURSO c ON ex.Cod_Curso = c.Cod_Curso
-INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO ti ON ti.Fecha = CAST(inf.FechaInscripcion AS DATE)
 LEFT JOIN empanadas_indexadas.EVALUACION_FINAL ef ON ef.Nro_inscripcionFinal = inf.Nro_inscripcionFinal
-LEFT JOIN empanadas_indexadas.BI_DIM_TIEMPO te ON te.Fecha = CAST(ex.Fecha AS DATE)
-LEFT JOIN empanadas_indexadas.BI_DIM_TIEMPO tic ON tic.Fecha = CAST(c.FechaInicio AS DATE)
+INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO te ON te.Fecha = CAST(ex.Fecha AS DATE)
 INNER JOIN empanadas_indexadas.BI_DIM_SEDE ds ON ds.ID_Sede = c.ID_Sede
 LEFT JOIN empanadas_indexadas.BI_DIM_CATEGORIA dc ON dc.ID_Categoria = c.ID_Categoria
-WHERE inf.FechaInscripcion IS NOT NULL;
+WHERE ex.Fecha IS NOT NULL
+GROUP BY
+    te.Tiempo_Key,
+    ds.Sede_Key,
+    dc.Categoria_Key,
+    CASE
+        WHEN DATEDIFF(YEAR, a.FechaNacimiento, inf.FechaInscripcion) < 25 THEN 1
+        WHEN DATEDIFF(YEAR, a.FechaNacimiento, inf.FechaInscripcion) BETWEEN 25 AND 35 THEN 2
+        WHEN DATEDIFF(YEAR, a.FechaNacimiento, inf.FechaInscripcion) BETWEEN 36 AND 50 THEN 3
+        ELSE 4
+    END;
 
 DECLARE @count_eval_final INT = @@ROWCOUNT;
 PRINT 'BI_FACT_EVALUACION_FINAL: ' + CAST(@count_eval_final AS VARCHAR(10)) + ' registros';
@@ -461,41 +498,44 @@ PRINT 'BI_FACT_EVALUACION_FINAL: ' + CAST(@count_eval_final AS VARCHAR(10)) + ' 
 -- 5.4) FACT_PAGO
 PRINT 'Poblando BI_FACT_PAGO...';
 INSERT INTO empanadas_indexadas.BI_FACT_PAGO (
-    Tiempo_Emision_Key,
-    Tiempo_Vencimiento_Key,
-    Tiempo_Pago_Key,
+    Tiempo_Key,
     Sede_Key,
     Categoria_Key,
     MedioPago_Key,
-    Importe_Factura,
-    Importe_Pagado,
-    Pago_En_Termino,
-    Dias_Fuera_Termino,
-    Factura_Pagada
+    Cantidad_Facturas,
+    Importe_Total_Facturado,
+    Importe_Total_Pagado,
+    Cantidad_Facturas_Pagadas,
+    Cantidad_Pagos_En_Termino,
+    Cantidad_Pagos_Fuera_Termino,
+    Importe_Adeudado
 )
 SELECT
     te.Tiempo_Key,
-    tv.Tiempo_Key,
-    tp.Tiempo_Key,
     ds.Sede_Key,
     dc.Categoria_Key,
     dmp.MedioPago_Key,
-    df.Importe AS Importe_Factura,
-    p.Importe AS Importe_Pagado,
-    CASE WHEN p.Fecha <= f.FechaVencimiento THEN 1 ELSE 0 END AS Pago_En_Termino,
-    CASE WHEN p.Fecha > f.FechaVencimiento THEN DATEDIFF(DAY, f.FechaVencimiento, p.Fecha) ELSE 0 END,
-    CASE WHEN p.ID_Pago IS NOT NULL THEN 1 ELSE 0 END AS Factura_Pagada
+    COUNT(DISTINCT f.Nro_Factura) AS Cantidad_Facturas,
+    SUM(df.Importe) AS Importe_Total_Facturado,
+    SUM(ISNULL(p.Importe, 0)) AS Importe_Total_Pagado,
+    COUNT(DISTINCT CASE WHEN p.ID_Pago IS NOT NULL THEN f.Nro_Factura ELSE NULL END) AS Cantidad_Facturas_Pagadas,
+    SUM(CASE WHEN p.Fecha IS NOT NULL AND p.Fecha <= f.FechaVencimiento THEN 1 ELSE 0 END) AS Cantidad_Pagos_En_Termino,
+    SUM(CASE WHEN p.Fecha IS NOT NULL AND p.Fecha > f.FechaVencimiento THEN 1 ELSE 0 END) AS Cantidad_Pagos_Fuera_Termino,
+    SUM(CASE WHEN p.ID_Pago IS NULL THEN df.Importe ELSE 0 END) AS Importe_Adeudado
 FROM empanadas_indexadas.FACTURA f
 INNER JOIN empanadas_indexadas.DETALLE_FACTURA df ON f.Nro_Factura = df.Nro_Factura
 INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO te ON te.Fecha = CAST(f.FechaEmision AS DATE)
-INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO tv ON tv.Fecha = CAST(f.FechaVencimiento AS DATE)
 LEFT JOIN empanadas_indexadas.PAGO p ON p.Nro_Factura = f.Nro_Factura
-LEFT JOIN empanadas_indexadas.BI_DIM_TIEMPO tp ON tp.Fecha = CAST(p.Fecha AS DATE)
 LEFT JOIN empanadas_indexadas.BI_DIM_MEDIO_PAGO dmp ON dmp.ID_MedioPago = p.ID_MedioPago
 INNER JOIN empanadas_indexadas.CURSO c ON df.Cod_Curso = c.Cod_Curso
 INNER JOIN empanadas_indexadas.BI_DIM_SEDE ds ON ds.ID_Sede = c.ID_Sede
 LEFT JOIN empanadas_indexadas.BI_DIM_CATEGORIA dc ON dc.ID_Categoria = c.ID_Categoria
-WHERE f.FechaEmision IS NOT NULL;
+WHERE f.FechaEmision IS NOT NULL
+GROUP BY
+    te.Tiempo_Key,
+    ds.Sede_Key,
+    dc.Categoria_Key,
+    dmp.MedioPago_Key;
 
 DECLARE @count_pago INT = @@ROWCOUNT;
 PRINT 'BI_FACT_PAGO: ' + CAST(@count_pago AS VARCHAR(10)) + ' registros';
@@ -568,7 +608,7 @@ WITH Ranking AS (
             ORDER BY SUM(f.Cantidad_Inscripciones) DESC
         ) AS Ranking_Turno
     FROM empanadas_indexadas.BI_FACT_INSCRIPCION f
-    INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO t ON f.Tiempo_Inscripcion_Key = t.Tiempo_Key
+    INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO t ON f.Tiempo_Key = t.Tiempo_Key
     INNER JOIN empanadas_indexadas.BI_DIM_SEDE s ON f.Sede_Key = s.Sede_Key
     LEFT JOIN empanadas_indexadas.BI_DIM_CATEGORIA c ON f.Categoria_Key = c.Categoria_Key
     LEFT JOIN empanadas_indexadas.BI_DIM_TURNO tu ON f.Turno_Key = tu.Turno_Key
@@ -602,7 +642,7 @@ SELECT
         ELSE 0
     END AS Porcentaje_Rechazo
 FROM empanadas_indexadas.BI_FACT_INSCRIPCION f
-INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO t ON f.Tiempo_Inscripcion_Key = t.Tiempo_Key
+INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO t ON f.Tiempo_Key = t.Tiempo_Key
 INNER JOIN empanadas_indexadas.BI_DIM_SEDE s ON f.Sede_Key = s.Sede_Key
 GROUP BY t.Anio, t.Mes, t.Mes_Nombre, s.Sede_Nombre;
 GO
@@ -683,13 +723,12 @@ CREATE VIEW empanadas_indexadas.BI_V_Tiempo_Finalizacion_Curso AS
 SELECT
     t.Anio,
     c.Categoria_Nombre,
-    AVG(f.Dias_Inicio_Curso_A_Final) AS Dias_Promedio_Finalizacion,
-    COUNT(*) AS Cantidad_Finales_Aprobados
+    AVG(f.Dias_Promedio_Finalizacion) AS Dias_Promedio_Finalizacion,
+    SUM(f.Cantidad_Aprobados) AS Cantidad_Finales_Aprobados
 FROM empanadas_indexadas.BI_FACT_EVALUACION_FINAL f
-INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO t ON f.Tiempo_Inicio_Curso_Key = t.Tiempo_Key
+INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO t ON f.Tiempo_Key = t.Tiempo_Key
 LEFT JOIN empanadas_indexadas.BI_DIM_CATEGORIA c ON f.Categoria_Key = c.Categoria_Key
-WHERE f.Aprobado = 1
-  AND f.Dias_Inicio_Curso_A_Final IS NOT NULL
+WHERE f.Dias_Promedio_Finalizacion IS NOT NULL
 GROUP BY t.Anio, c.Categoria_Nombre;
 GO
 
@@ -702,14 +741,13 @@ SELECT
     t.Cuatrimestre,
     r.Rango_Descripcion AS Rango_Etario_Alumno,
     c.Categoria_Nombre,
-    AVG(f.Nota) AS Nota_Promedio,
-    COUNT(*) AS Cantidad_Finales
+    AVG(f.Nota_Promedio) AS Nota_Promedio,
+    SUM(f.Cantidad_Presentes) AS Cantidad_Finales
 FROM empanadas_indexadas.BI_FACT_EVALUACION_FINAL f
-INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO t ON f.Tiempo_Evaluacion_Key = t.Tiempo_Key
+INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO t ON f.Tiempo_Key = t.Tiempo_Key
 LEFT JOIN empanadas_indexadas.BI_DIM_RANGO_ETARIO_ALUMNO r ON f.Rango_Etario_Alumno_Key = r.Rango_Etario_Alumno_Key
 LEFT JOIN empanadas_indexadas.BI_DIM_CATEGORIA c ON f.Categoria_Key = c.Categoria_Key
-WHERE f.Nota IS NOT NULL
-  AND f.Presente = 1
+WHERE f.Nota_Promedio IS NOT NULL
 GROUP BY t.Anio, t.Cuatrimestre, r.Rango_Descripcion, c.Categoria_Nombre;
 GO
 
@@ -722,14 +760,14 @@ SELECT
     t.Cuatrimestre,
     s.Sede_Nombre,
     SUM(f.Cantidad_Inscripciones_Final) AS Total_Inscripciones_Final,
-    SUM(CASE WHEN f.Presente = 0 OR f.Presente IS NULL THEN 1 ELSE 0 END) AS Total_Ausentes,
+    SUM(f.Cantidad_Ausentes) AS Total_Ausentes,
     CASE
         WHEN SUM(f.Cantidad_Inscripciones_Final) > 0
-        THEN (SUM(CASE WHEN f.Presente = 0 OR f.Presente IS NULL THEN 1 ELSE 0 END) * 100.0) / SUM(f.Cantidad_Inscripciones_Final)
+        THEN (SUM(f.Cantidad_Ausentes) * 100.0) / SUM(f.Cantidad_Inscripciones_Final)
         ELSE 0
     END AS Porcentaje_Ausentismo
 FROM empanadas_indexadas.BI_FACT_EVALUACION_FINAL f
-INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO t ON f.Tiempo_Inscripcion_Key = t.Tiempo_Key
+INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO t ON f.Tiempo_Key = t.Tiempo_Key
 INNER JOIN empanadas_indexadas.BI_DIM_SEDE s ON f.Sede_Key = s.Sede_Key
 GROUP BY t.Anio, t.Cuatrimestre, s.Sede_Nombre;
 GO
@@ -741,16 +779,15 @@ CREATE VIEW empanadas_indexadas.BI_V_Desvio_Pagos AS
 SELECT
     t.Anio,
     t.Cuatrimestre,
-    COUNT(*) AS Total_Pagos,
-    SUM(CASE WHEN f.Pago_En_Termino = 0 AND f.Tiempo_Pago_Key IS NOT NULL THEN 1 ELSE 0 END) AS Pagos_Fuera_Termino,
+    SUM(f.Cantidad_Facturas_Pagadas) AS Total_Pagos,
+    SUM(f.Cantidad_Pagos_Fuera_Termino) AS Pagos_Fuera_Termino,
     CASE
-        WHEN COUNT(*) > 0
-        THEN (SUM(CASE WHEN f.Pago_En_Termino = 0 AND f.Tiempo_Pago_Key IS NOT NULL THEN 1 ELSE 0 END) * 100.0) / COUNT(*)
+        WHEN SUM(f.Cantidad_Facturas_Pagadas) > 0
+        THEN (SUM(f.Cantidad_Pagos_Fuera_Termino) * 100.0) / SUM(f.Cantidad_Facturas_Pagadas)
         ELSE 0
     END AS Porcentaje_Fuera_Termino
 FROM empanadas_indexadas.BI_FACT_PAGO f
-INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO t ON f.Tiempo_Pago_Key = t.Tiempo_Key
-WHERE f.Tiempo_Pago_Key IS NOT NULL
+INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO t ON f.Tiempo_Key = t.Tiempo_Key
 GROUP BY t.Anio, t.Cuatrimestre;
 GO
 
@@ -762,15 +799,15 @@ SELECT
     t.Anio,
     t.Mes,
     t.Mes_Nombre,
-    SUM(f.Importe_Factura) AS Facturacion_Total,
-    SUM(CASE WHEN f.Factura_Pagada = 0 THEN f.Importe_Factura ELSE 0 END) AS Monto_Adeudado,
+    SUM(f.Importe_Total_Facturado) AS Facturacion_Total,
+    SUM(f.Importe_Adeudado) AS Monto_Adeudado,
     CASE
-        WHEN SUM(f.Importe_Factura) > 0
-        THEN (SUM(CASE WHEN f.Factura_Pagada = 0 THEN f.Importe_Factura ELSE 0 END) * 100.0) / SUM(f.Importe_Factura)
+        WHEN SUM(f.Importe_Total_Facturado) > 0
+        THEN (SUM(f.Importe_Adeudado) * 100.0) / SUM(f.Importe_Total_Facturado)
         ELSE 0
     END AS Porcentaje_Morosidad
 FROM empanadas_indexadas.BI_FACT_PAGO f
-INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO t ON f.Tiempo_Emision_Key = t.Tiempo_Key
+INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO t ON f.Tiempo_Key = t.Tiempo_Key
 GROUP BY t.Anio, t.Mes, t.Mes_Nombre;
 GO
 
@@ -783,13 +820,13 @@ WITH Ingresos AS (
         t.Anio,
         s.Sede_Nombre,
         c.Categoria_Nombre,
-        SUM(f.Importe_Factura) AS Ingresos_Totales,
+        SUM(f.Importe_Total_Facturado) AS Ingresos_Totales,
         ROW_NUMBER() OVER (
             PARTITION BY t.Anio, s.Sede_Nombre
-            ORDER BY SUM(f.Importe_Factura) DESC
+            ORDER BY SUM(f.Importe_Total_Facturado) DESC
         ) AS Ranking
     FROM empanadas_indexadas.BI_FACT_PAGO f
-    INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO t ON f.Tiempo_Emision_Key = t.Tiempo_Key
+    INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO t ON f.Tiempo_Key = t.Tiempo_Key
     INNER JOIN empanadas_indexadas.BI_DIM_SEDE s ON f.Sede_Key = s.Sede_Key
     LEFT JOIN empanadas_indexadas.BI_DIM_CATEGORIA c ON f.Categoria_Key = c.Categoria_Key
     GROUP BY t.Anio, s.Sede_Nombre, c.Categoria_Nombre
@@ -843,7 +880,7 @@ PRINT '';
 PRINT 'Creando índices adicionales...';
 
 -- Índices en FACT_INSCRIPCION
-CREATE INDEX IX_BI_FACT_INSCRIPCION_Tiempo ON empanadas_indexadas.BI_FACT_INSCRIPCION(Tiempo_Inscripcion_Key);
+CREATE INDEX IX_BI_FACT_INSCRIPCION_Tiempo ON empanadas_indexadas.BI_FACT_INSCRIPCION(Tiempo_Key);
 CREATE INDEX IX_BI_FACT_INSCRIPCION_Sede ON empanadas_indexadas.BI_FACT_INSCRIPCION(Sede_Key);
 CREATE INDEX IX_BI_FACT_INSCRIPCION_Categoria ON empanadas_indexadas.BI_FACT_INSCRIPCION(Categoria_Key);
 
@@ -852,11 +889,11 @@ CREATE INDEX IX_BI_FACT_EVALUACION_CURSO_Tiempo ON empanadas_indexadas.BI_FACT_E
 CREATE INDEX IX_BI_FACT_EVALUACION_CURSO_Sede ON empanadas_indexadas.BI_FACT_EVALUACION_CURSO(Sede_Key);
 
 -- Índices en FACT_EVALUACION_FINAL
-CREATE INDEX IX_BI_FACT_EVALUACION_FINAL_Tiempo ON empanadas_indexadas.BI_FACT_EVALUACION_FINAL(Tiempo_Inscripcion_Key);
+CREATE INDEX IX_BI_FACT_EVALUACION_FINAL_Tiempo ON empanadas_indexadas.BI_FACT_EVALUACION_FINAL(Tiempo_Key);
 CREATE INDEX IX_BI_FACT_EVALUACION_FINAL_Sede ON empanadas_indexadas.BI_FACT_EVALUACION_FINAL(Sede_Key);
 
 -- Índices en FACT_PAGO
-CREATE INDEX IX_BI_FACT_PAGO_Tiempo ON empanadas_indexadas.BI_FACT_PAGO(Tiempo_Emision_Key);
+CREATE INDEX IX_BI_FACT_PAGO_Tiempo ON empanadas_indexadas.BI_FACT_PAGO(Tiempo_Key);
 CREATE INDEX IX_BI_FACT_PAGO_Sede ON empanadas_indexadas.BI_FACT_PAGO(Sede_Key);
 
 -- Índices en FACT_ENCUESTA
@@ -927,8 +964,4 @@ PRINT '  7. BI_V_Desvio_Pagos';
 PRINT '  8. BI_V_Tasa_Morosidad';
 PRINT '  9. BI_V_Ingresos_Por_Categoria';
 PRINT ' 10. BI_V_Indice_Satisfaccion';
-PRINT '';
-PRINT '============================================================================';
-PRINT 'El modelo de BI está listo para ser utilizado en reportes y análisis';
-PRINT '============================================================================';
 GO
