@@ -187,7 +187,7 @@ CREATE TABLE empanadas_indexadas.BI_FACT_INSCRIPCION (
 -- Agrupado por Tiempo + Sede + Categoría + Rango Etario
 CREATE TABLE empanadas_indexadas.BI_FACT_EVALUACION_CURSO (
     Fact_Evaluacion_Key BIGINT PRIMARY KEY IDENTITY(1,1),
-    Tiempo_Evaluacion_Key INT NOT NULL,
+    Tiempo_Key INT NOT NULL,
     Sede_Key INT NOT NULL,
     Categoria_Key TINYINT NULL,
     Rango_Etario_Alumno_Key TINYINT NULL,
@@ -199,7 +199,7 @@ CREATE TABLE empanadas_indexadas.BI_FACT_EVALUACION_CURSO (
     Suma_Notas DECIMAL(18,2) NULL,
     Nota_Promedio DECIMAL(5,2) NULL,
     -- FKs
-    FOREIGN KEY (Tiempo_Evaluacion_Key) REFERENCES empanadas_indexadas.BI_DIM_TIEMPO(Tiempo_Key),
+    FOREIGN KEY (Tiempo_Key) REFERENCES empanadas_indexadas.BI_DIM_TIEMPO(Tiempo_Key),
     FOREIGN KEY (Sede_Key) REFERENCES empanadas_indexadas.BI_DIM_SEDE(Sede_Key),
     FOREIGN KEY (Categoria_Key) REFERENCES empanadas_indexadas.BI_DIM_CATEGORIA(Categoria_Key),
     FOREIGN KEY (Rango_Etario_Alumno_Key) REFERENCES empanadas_indexadas.BI_DIM_RANGO_ETARIO_ALUMNO(Rango_Etario_Alumno_Key)
@@ -409,7 +409,7 @@ PRINT 'BI_FACT_INSCRIPCION: ' + CAST(@count_inscripcion AS VARCHAR(10)) + ' regi
 -- 5.2) FACT_EVALUACION_CURSO Agregado por (Tiempo + Sede + Categoría + Rango Etario)
 PRINT 'Poblando BI_FACT_EVALUACION_CURSO...';
 INSERT INTO empanadas_indexadas.BI_FACT_EVALUACION_CURSO (
-    Tiempo_Evaluacion_Key,
+    Tiempo_Key,
     Sede_Key,
     Categoria_Key,
     Rango_Etario_Alumno_Key,
@@ -698,7 +698,7 @@ SELECT
         ELSE 0
     END AS Porcentaje_Aprobacion
 FROM empanadas_indexadas.BI_FACT_EVALUACION_CURSO f
-INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO t ON f.Tiempo_Evaluacion_Key = t.Tiempo_Key
+INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO t ON f.Tiempo_Key = t.Tiempo_Key
 INNER JOIN empanadas_indexadas.BI_DIM_SEDE s ON f.Sede_Key = s.Sede_Key
 GROUP BY t.Anio, s.Sede_Nombre;
 GO
