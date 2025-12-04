@@ -16,8 +16,6 @@ IF OBJECT_ID('empanadas_indexadas.BI_V_Tasa_Rechazo_Inscripciones', 'V') IS NOT 
     DROP VIEW empanadas_indexadas.BI_V_Tasa_Rechazo_Inscripciones;
 IF OBJECT_ID('empanadas_indexadas.BI_V_Desempeno_Cursada_Sede', 'V') IS NOT NULL
     DROP VIEW empanadas_indexadas.BI_V_Desempeno_Cursada_Sede;
-IF OBJECT_ID('empanadas_indexadas.BI_V_Desempeno_Cursada_Completa_Sede', 'V') IS NOT NULL
-    DROP VIEW empanadas_indexadas.BI_V_Desempeno_Cursada_Completa_Sede;
 IF OBJECT_ID('empanadas_indexadas.BI_V_Tiempo_Finalizacion_Curso', 'V') IS NOT NULL
     DROP VIEW empanadas_indexadas.BI_V_Tiempo_Finalizacion_Curso;
 IF OBJECT_ID('empanadas_indexadas.BI_V_Nota_Promedio_Finales', 'V') IS NOT NULL
@@ -186,17 +184,20 @@ CREATE TABLE empanadas_indexadas.BI_FACT_INSCRIPCION (
 );
 
 -- FACT: EVALUACIONES DE CURSO
+-- Agrupado por Tiempo + Sede + Categoría + Rango Etario
 CREATE TABLE empanadas_indexadas.BI_FACT_EVALUACION_CURSO (
     Fact_Evaluacion_Key BIGINT PRIMARY KEY IDENTITY(1,1),
     Tiempo_Evaluacion_Key INT NOT NULL,
     Sede_Key INT NOT NULL,
     Categoria_Key TINYINT NULL,
     Rango_Etario_Alumno_Key TINYINT NULL,
-    -- Métricas
-    Cantidad_Evaluaciones INT NOT NULL DEFAULT 1,
-    Nota BIGINT NULL,
-    Presente BIT NULL,
-    Aprobado BIT NULL, -- Nota >= 4
+    -- Métricas pre-calculadas
+    Cantidad_Evaluaciones INT NOT NULL DEFAULT 0,
+    Cantidad_Presentes INT NOT NULL DEFAULT 0,
+    Cantidad_Ausentes INT NOT NULL DEFAULT 0,
+    Cantidad_Aprobados INT NOT NULL DEFAULT 0,
+    Suma_Notas DECIMAL(18,2) NULL,
+    Nota_Promedio DECIMAL(5,2) NULL,
     -- FKs
     FOREIGN KEY (Tiempo_Evaluacion_Key) REFERENCES empanadas_indexadas.BI_DIM_TIEMPO(Tiempo_Key),
     FOREIGN KEY (Sede_Key) REFERENCES empanadas_indexadas.BI_DIM_SEDE(Sede_Key),
@@ -212,7 +213,7 @@ CREATE TABLE empanadas_indexadas.BI_FACT_EVALUACION_FINAL (
     Sede_Key INT NOT NULL,
     Categoria_Key TINYINT NULL,
     Rango_Etario_Alumno_Key TINYINT NULL,
-    -- Métricas
+    -- Métricas pre-calculadas
     Cantidad_Inscripciones_Final INT NOT NULL DEFAULT 0,
     Cantidad_Presentes INT NOT NULL DEFAULT 0,
     Cantidad_Ausentes INT NOT NULL DEFAULT 0,
@@ -235,7 +236,7 @@ CREATE TABLE empanadas_indexadas.BI_FACT_PAGO (
     Sede_Key INT NOT NULL,
     Categoria_Key TINYINT NULL,
     MedioPago_Key INT NULL,
-    -- Métricas
+    -- Métricas pre-calculadas
     Cantidad_Facturas INT NOT NULL DEFAULT 0,
     Importe_Total_Facturado DECIMAL(18,2) NOT NULL DEFAULT 0,
     Importe_Total_Pagado DECIMAL(18,2) NULL DEFAULT 0,
@@ -251,6 +252,7 @@ CREATE TABLE empanadas_indexadas.BI_FACT_PAGO (
 );
 
 -- FACT: ENCUESTAS
+-- Agrupado por Tiempo + Sede + Categoría + Rango Etario Profesor + Satisfacción
 CREATE TABLE empanadas_indexadas.BI_FACT_ENCUESTA (
     Fact_Encuesta_Key BIGINT PRIMARY KEY IDENTITY(1,1),
     Tiempo_Key INT NOT NULL,
@@ -258,9 +260,10 @@ CREATE TABLE empanadas_indexadas.BI_FACT_ENCUESTA (
     Categoria_Key TINYINT NULL,
     Rango_Etario_Profesor_Key TINYINT NULL,
     Satisfaccion_Key TINYINT NULL,
-    -- Métricas
-    Cantidad_Respuestas INT NOT NULL DEFAULT 1,
-    Nota BIGINT NULL,
+    -- Métricas pre-calculadas
+    Cantidad_Respuestas INT NOT NULL DEFAULT 0,
+    Suma_Notas DECIMAL(18,2) NULL,
+    Nota_Promedio DECIMAL(5,2) NULL,
     -- FKs
     FOREIGN KEY (Tiempo_Key) REFERENCES empanadas_indexadas.BI_DIM_TIEMPO(Tiempo_Key),
     FOREIGN KEY (Sede_Key) REFERENCES empanadas_indexadas.BI_DIM_SEDE(Sede_Key),
@@ -348,6 +351,7 @@ PRINT '';
 -- ============================================================================
 
 -- 5.1) FACT_INSCRIPCION
+-- 5.1) FACT_INSCRIPCION Agregado por (Tiempo + Sede + Categoría + Turno + Rango Etario)
 PRINT 'Poblando BI_FACT_INSCRIPCION...';
 INSERT INTO empanadas_indexadas.BI_FACT_INSCRIPCION (
     Tiempo_Key,
@@ -402,7 +406,7 @@ GROUP BY
 DECLARE @count_inscripcion INT = @@ROWCOUNT;
 PRINT 'BI_FACT_INSCRIPCION: ' + CAST(@count_inscripcion AS VARCHAR(10)) + ' registros';
 
--- 5.2) FACT_EVALUACION_CURSO
+-- 5.2) FACT_EVALUACION_CURSO Agregado por (Tiempo + Sede + Categoría + Rango Etario)
 PRINT 'Poblando BI_FACT_EVALUACION_CURSO...';
 INSERT INTO empanadas_indexadas.BI_FACT_EVALUACION_CURSO (
     Tiempo_Evaluacion_Key,
@@ -410,9 +414,11 @@ INSERT INTO empanadas_indexadas.BI_FACT_EVALUACION_CURSO (
     Categoria_Key,
     Rango_Etario_Alumno_Key,
     Cantidad_Evaluaciones,
-    Nota,
-    Presente,
-    Aprobado
+    Cantidad_Presentes,
+    Cantidad_Ausentes,
+    Cantidad_Aprobados,
+    Suma_Notas,
+    Nota_Promedio
 )
 SELECT
     te.Tiempo_Key,
@@ -424,10 +430,12 @@ SELECT
         WHEN DATEDIFF(YEAR, a.FechaNacimiento, ec.FechaEvaluacion) BETWEEN 36 AND 50 THEN 3
         ELSE 4
     END AS Rango_Etario_Alumno_Key,
-    1 AS Cantidad_Evaluaciones,
-    ec.Nota,
-    ec.Presente,
-    CASE WHEN ec.Nota >= 4 THEN 1 ELSE 0 END AS Aprobado
+    COUNT(*) AS Cantidad_Evaluaciones,
+    SUM(CASE WHEN ec.Presente = 1 THEN 1 ELSE 0 END) AS Cantidad_Presentes,
+    SUM(CASE WHEN ec.Presente = 0 OR ec.Presente IS NULL THEN 1 ELSE 0 END) AS Cantidad_Ausentes,
+    SUM(CASE WHEN ec.Nota >= 4 AND ec.Presente = 1 THEN 1 ELSE 0 END) AS Cantidad_Aprobados,
+    SUM(CASE WHEN ec.Presente = 1 THEN ec.Nota ELSE 0 END) AS Suma_Notas,
+    AVG(CASE WHEN ec.Presente = 1 THEN CAST(ec.Nota AS DECIMAL(5,2)) ELSE NULL END) AS Nota_Promedio
 FROM empanadas_indexadas.EVALUACION_CURSO ec
 INNER JOIN empanadas_indexadas.INSCRIPCION i ON ec.Nro_inscripcion = i.Nro_Inscripcion
 INNER JOIN empanadas_indexadas.ALUMNO a ON i.Legajo_Alumno = a.Legajo_Alumno
@@ -435,12 +443,23 @@ INNER JOIN empanadas_indexadas.CURSO c ON i.Cod_Curso = c.Cod_Curso
 INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO te ON te.Fecha = CAST(ec.FechaEvaluacion AS DATE)
 INNER JOIN empanadas_indexadas.BI_DIM_SEDE ds ON ds.ID_Sede = c.ID_Sede
 LEFT JOIN empanadas_indexadas.BI_DIM_CATEGORIA dc ON dc.ID_Categoria = c.ID_Categoria
-WHERE ec.FechaEvaluacion IS NOT NULL;
+WHERE ec.FechaEvaluacion IS NOT NULL
+GROUP BY
+    te.Tiempo_Key,
+    ds.Sede_Key,
+    dc.Categoria_Key,
+    CASE
+        WHEN DATEDIFF(YEAR, a.FechaNacimiento, ec.FechaEvaluacion) < 25 THEN 1
+        WHEN DATEDIFF(YEAR, a.FechaNacimiento, ec.FechaEvaluacion) BETWEEN 25 AND 35 THEN 2
+        WHEN DATEDIFF(YEAR, a.FechaNacimiento, ec.FechaEvaluacion) BETWEEN 36 AND 50 THEN 3
+        ELSE 4
+    END;
 
 DECLARE @count_eval_curso INT = @@ROWCOUNT;
 PRINT 'BI_FACT_EVALUACION_CURSO: ' + CAST(@count_eval_curso AS VARCHAR(10)) + ' registros';
 
 -- 5.3) FACT_EVALUACION_FINAL
+-- 5.3) FACT_EVALUACION_FINAL Agregado por (Tiempo + Sede + Categoría + Rango Etario)
 PRINT 'Poblando BI_FACT_EVALUACION_FINAL...';
 INSERT INTO empanadas_indexadas.BI_FACT_EVALUACION_FINAL (
     Tiempo_Key,
@@ -495,7 +514,7 @@ GROUP BY
 DECLARE @count_eval_final INT = @@ROWCOUNT;
 PRINT 'BI_FACT_EVALUACION_FINAL: ' + CAST(@count_eval_final AS VARCHAR(10)) + ' registros';
 
--- 5.4) FACT_PAGO
+-- 5.4) FACT_PAGO Agregado por (Tiempo + Sede + Categoría + Medio Pago)
 PRINT 'Poblando BI_FACT_PAGO...';
 INSERT INTO empanadas_indexadas.BI_FACT_PAGO (
     Tiempo_Key,
@@ -540,7 +559,7 @@ GROUP BY
 DECLARE @count_pago INT = @@ROWCOUNT;
 PRINT 'BI_FACT_PAGO: ' + CAST(@count_pago AS VARCHAR(10)) + ' registros';
 
--- 5.5) FACT_ENCUESTA
+-- 5.5) FACT_ENCUESTA Agregado por (Tiempo + Sede + Categoría + Rango Etario Profesor + Satisfacción)
 PRINT 'Poblando BI_FACT_ENCUESTA...';
 INSERT INTO empanadas_indexadas.BI_FACT_ENCUESTA (
     Tiempo_Key,
@@ -549,7 +568,8 @@ INSERT INTO empanadas_indexadas.BI_FACT_ENCUESTA (
     Rango_Etario_Profesor_Key,
     Satisfaccion_Key,
     Cantidad_Respuestas,
-    Nota
+    Suma_Notas,
+    Nota_Promedio
 )
 SELECT
     t.Tiempo_Key,
@@ -566,8 +586,9 @@ SELECT
         WHEN re.Nota BETWEEN 7 AND 10 THEN 3
         ELSE NULL
     END AS Satisfaccion_Key,
-    1 AS Cantidad_Respuestas,
-    re.Nota
+    COUNT(*) AS Cantidad_Respuestas,
+    SUM(re.Nota) AS Suma_Notas,
+    AVG(CAST(re.Nota AS DECIMAL(5,2))) AS Nota_Promedio
 FROM empanadas_indexadas.ENCUESTA e
 INNER JOIN empanadas_indexadas.RESPUESTA_ENCUESTA re ON e.ID_Encuesta = re.ID_Encuesta
 INNER JOIN empanadas_indexadas.CURSO c ON e.Cod_Curso = c.Cod_Curso
@@ -576,7 +597,22 @@ INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO t ON t.Fecha = CAST(e.FechaRegistro
 INNER JOIN empanadas_indexadas.BI_DIM_SEDE ds ON ds.ID_Sede = c.ID_Sede
 LEFT JOIN empanadas_indexadas.BI_DIM_CATEGORIA dc ON dc.ID_Categoria = c.ID_Categoria
 WHERE e.FechaRegistro IS NOT NULL
-  AND re.Nota BETWEEN 1 AND 10;
+  AND re.Nota BETWEEN 1 AND 10
+GROUP BY
+    t.Tiempo_Key,
+    ds.Sede_Key,
+    dc.Categoria_Key,
+    CASE
+        WHEN DATEDIFF(YEAR, p.FechaNacimiento, e.FechaRegistro) BETWEEN 25 AND 35 THEN 1
+        WHEN DATEDIFF(YEAR, p.FechaNacimiento, e.FechaRegistro) BETWEEN 36 AND 50 THEN 2
+        ELSE 3
+    END,
+    CASE
+        WHEN re.Nota BETWEEN 1 AND 4 THEN 1
+        WHEN re.Nota BETWEEN 5 AND 6 THEN 2
+        WHEN re.Nota BETWEEN 7 AND 10 THEN 3
+        ELSE NULL
+    END;
 
 DECLARE @count_encuesta INT = @@ROWCOUNT;
 PRINT 'BI_FACT_ENCUESTA: ' + CAST(@count_encuesta AS VARCHAR(10)) + ' registros';
@@ -647,73 +683,24 @@ INNER JOIN empanadas_indexadas.BI_DIM_SEDE s ON f.Sede_Key = s.Sede_Key
 GROUP BY t.Anio, t.Mes, t.Mes_Nombre, s.Sede_Nombre;
 GO
 
--- VISTA 3A: Comparación de desempeño de cursada por sede (Interpretación A: Tasa de aprobación de evaluaciones individuales)
+-- VISTA 3: Comparación de desempeño de cursada por sede
 -- Porcentaje de evaluaciones aprobadas (nota >= 4) por sede por año
--- NOTA: Esta interpretación mantiene la granularidad a nivel evento (una fila = una evaluación)
--- y permite análisis más detallado de qué módulos/TPs fallan más.
 GO
 CREATE VIEW empanadas_indexadas.BI_V_Desempeno_Cursada_Sede AS
 SELECT
     t.Anio,
     s.Sede_Nombre,
-    SUM(f.Cantidad_Evaluaciones) AS Total_Evaluaciones,
-    SUM(CASE WHEN f.Aprobado = 1 THEN 1 ELSE 0 END) AS Total_Aprobadas,
+    SUM(f.Cantidad_Presentes) AS Total_Evaluaciones_Presentes,
+    SUM(f.Cantidad_Aprobados) AS Total_Aprobadas,
     CASE
-        WHEN SUM(f.Cantidad_Evaluaciones) > 0
-        THEN (SUM(CASE WHEN f.Aprobado = 1 THEN 1 ELSE 0 END) * 100.0) / SUM(f.Cantidad_Evaluaciones)
+        WHEN SUM(f.Cantidad_Presentes) > 0
+        THEN (SUM(f.Cantidad_Aprobados) * 100.0) / SUM(f.Cantidad_Presentes)
         ELSE 0
     END AS Porcentaje_Aprobacion
 FROM empanadas_indexadas.BI_FACT_EVALUACION_CURSO f
 INNER JOIN empanadas_indexadas.BI_DIM_TIEMPO t ON f.Tiempo_Evaluacion_Key = t.Tiempo_Key
 INNER JOIN empanadas_indexadas.BI_DIM_SEDE s ON f.Sede_Key = s.Sede_Key
-WHERE f.Presente = 1
 GROUP BY t.Anio, s.Sede_Nombre;
-GO
-
--- VISTA 3B: Comparación de desempeño de cursada por sede (Interpretación B: Tasa de aprobación de cursada completa)
--- Porcentaje de alumnos que aprobaron TODAS las evaluaciones (nota >= 4 en todos módulos y TP)
-GO
-CREATE VIEW empanadas_indexadas.BI_V_Desempeno_Cursada_Completa_Sede AS
-WITH Aprobaciones_Por_Alumno AS (
-    SELECT
-        YEAR(c.FechaInicio) AS Anio,
-        s.Nombre AS Sede_Nombre,
-        i.Nro_Inscripcion,
-        CASE
-            WHEN NOT EXISTS (
-                SELECT 1
-                FROM empanadas_indexadas.EVALUACION_CURSO ec
-                WHERE ec.Nro_inscripcion = i.Nro_Inscripcion
-                  AND ec.Presente = 1
-                  AND (ec.Nota < 4 OR ec.Nota IS NULL)
-            )
-            AND EXISTS (
-                SELECT 1
-                FROM empanadas_indexadas.EVALUACION_CURSO ec2
-                WHERE ec2.Nro_inscripcion = i.Nro_Inscripcion
-                  AND ec2.Presente = 1
-            )
-            THEN 1
-            ELSE 0
-        END AS Aprobo_Cursada
-    FROM empanadas_indexadas.INSCRIPCION i
-    INNER JOIN empanadas_indexadas.ALUMNO a ON i.Legajo_Alumno = a.Legajo_Alumno
-    INNER JOIN empanadas_indexadas.CURSO c ON i.Cod_Curso = c.Cod_Curso
-    INNER JOIN empanadas_indexadas.SEDE s ON c.ID_Sede = s.ID_Sede
-    WHERE i.Estado = 'Aprobada'  -- Solo inscripciones aprobadas
-)
-SELECT
-    Anio,
-    Sede_Nombre,
-    COUNT(*) AS Total_Alumnos_Cursada,
-    SUM(Aprobo_Cursada) AS Total_Cursadas_Aprobadas,
-    CASE
-        WHEN COUNT(*) > 0
-        THEN (SUM(Aprobo_Cursada) * 100.0) / COUNT(*)
-        ELSE 0
-    END AS Porcentaje_Aprobacion_Cursada_Completa
-FROM Aprobaciones_Por_Alumno
-GROUP BY Anio, Sede_Nombre;
 GO
 
 -- VISTA 4: Tiempo promedio de finalización de curso
