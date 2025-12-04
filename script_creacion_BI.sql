@@ -13,6 +13,7 @@ GO
 DROP VIEW IF EXISTS empanadas_indexadas.BI_V_Categorias_Turnos_Mas_Solicitados;
 DROP VIEW IF EXISTS empanadas_indexadas.BI_V_Tasa_Rechazo_Inscripciones;
 DROP VIEW IF EXISTS empanadas_indexadas.BI_V_Desempeno_Cursada_Sede;
+DROP VIEW IF EXISTS empanadas_indexadas.BI_V_Desempeno_Cursada_Completa_Sede;
 DROP VIEW IF EXISTS empanadas_indexadas.BI_V_Tiempo_Finalizacion_Curso;
 DROP VIEW IF EXISTS empanadas_indexadas.BI_V_Nota_Promedio_Finales;
 DROP VIEW IF EXISTS empanadas_indexadas.BI_V_Tasa_Ausentismo_Finales;
