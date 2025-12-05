@@ -1,5 +1,5 @@
 ---
-title: Modelo BI - Empanadas Indexadas 
+title: Modelo BI - Empanadas Indexadas
 ---
 erDiagram
     %% ========================================================================
@@ -8,10 +8,10 @@ erDiagram
 
     BI_DIM_TIEMPO {
         int Tiempo_Key PK
-        date Fecha
+        date Fecha UK
         int Anio
-        tinyint Mes
         tinyint Cuatrimestre
+        tinyint Mes
         nvarchar Mes_Nombre
     }
 
@@ -69,8 +69,7 @@ erDiagram
 
     BI_FACT_INSCRIPCION {
         bigint Fact_Inscripcion_Key PK
-        int Tiempo_Inscripcion_Key FK
-        int Tiempo_Respuesta_Key FK
+        int Tiempo_Key FK
         int Sede_Key FK
         tinyint Categoria_Key FK
         tinyint Turno_Key FK
@@ -79,13 +78,13 @@ erDiagram
         int Inscripciones_Aprobadas
         int Inscripciones_Rechazadas
         int Inscripciones_Pendientes
-        int Dias_Hasta_Respuesta
-        decimal Precio_Mensual
+        decimal Dias_Promedio_Hasta_Respuesta
+        decimal Importe_Total_Esperado
     }
 
     BI_FACT_EVALUACION_CURSO {
         bigint Fact_Evaluacion_Key PK
-        int Tiempo_Evaluacion_Key FK
+        int Tiempo_Key FK
         int Sede_Key FK
         tinyint Categoria_Key FK
         tinyint Rango_Etario_Alumno_Key FK
@@ -99,9 +98,7 @@ erDiagram
 
     BI_FACT_EVALUACION_FINAL {
         bigint Fact_Final_Key PK
-        int Tiempo_Inscripcion_Key FK
-        int Tiempo_Evaluacion_Key FK
-        int Tiempo_Inicio_Curso_Key FK
+        int Tiempo_Key FK
         int Sede_Key FK
         tinyint Categoria_Key FK
         tinyint Rango_Etario_Alumno_Key FK
@@ -116,9 +113,7 @@ erDiagram
 
     BI_FACT_PAGO {
         bigint Fact_Pago_Key PK
-        int Tiempo_Emision_Key FK
-        int Tiempo_Vencimiento_Key FK
-        int Tiempo_Pago_Key FK
+        int Tiempo_Key FK
         int Sede_Key FK
         tinyint Categoria_Key FK
         int MedioPago_Key FK
@@ -148,38 +143,33 @@ erDiagram
     %% ========================================================================
 
     %% FACT_INSCRIPCION
-    BI_DIM_TIEMPO ||--o{ BI_FACT_INSCRIPCION : "Fecha Inscripcion"
-    BI_DIM_TIEMPO ||--o{ BI_FACT_INSCRIPCION : "Fecha Respuesta"
-    BI_DIM_SEDE ||--o{ BI_FACT_INSCRIPCION : en
-    BI_DIM_CATEGORIA ||--o{ BI_FACT_INSCRIPCION : de
-    BI_DIM_TURNO ||--o{ BI_FACT_INSCRIPCION : durante
-    BI_DIM_RANGO_ETARIO_ALUMNO ||--o{ BI_FACT_INSCRIPCION : "edad alumno"
+    BI_DIM_TIEMPO ||--o{ BI_FACT_INSCRIPCION : "Fecha de Inscripcion"
+    BI_DIM_SEDE ||--o{ BI_FACT_INSCRIPCION : "Sede"
+    BI_DIM_CATEGORIA ||--o{ BI_FACT_INSCRIPCION : "Categoria"
+    BI_DIM_TURNO ||--o{ BI_FACT_INSCRIPCION : "Turno"
+    BI_DIM_RANGO_ETARIO_ALUMNO ||--o{ BI_FACT_INSCRIPCION : "Rango_Etario"
 
-    %% FACT_EVALUACION_CURSO
-    BI_DIM_TIEMPO ||--o{ BI_FACT_EVALUACION_CURSO : "Fecha Evaluacion"
-    BI_DIM_SEDE ||--o{ BI_FACT_EVALUACION_CURSO : en
-    BI_DIM_CATEGORIA ||--o{ BI_FACT_EVALUACION_CURSO : de
-    BI_DIM_RANGO_ETARIO_ALUMNO ||--o{ BI_FACT_EVALUACION_CURSO : "edad alumno"
+    %% FACT_EVALUACION_CURSO conecta con 4 dimensiones
+    BI_DIM_TIEMPO ||--o{ BI_FACT_EVALUACION_CURSO : "Fecha de Evaluacion"
+    BI_DIM_SEDE ||--o{ BI_FACT_EVALUACION_CURSO : "Sede"
+    BI_DIM_CATEGORIA ||--o{ BI_FACT_EVALUACION_CURSO : "Categoria"
+    BI_DIM_RANGO_ETARIO_ALUMNO ||--o{ BI_FACT_EVALUACION_CURSO : "Rango_Etario"
 
     %% FACT_EVALUACION_FINAL
-    BI_DIM_TIEMPO ||--o{ BI_FACT_EVALUACION_FINAL : "Fecha Inscripcion Examen"
-    BI_DIM_TIEMPO ||--o{ BI_FACT_EVALUACION_FINAL : "Fecha Evaluacion"
-    BI_DIM_TIEMPO ||--o{ BI_FACT_EVALUACION_FINAL : "Fecha Inicio Cursada Orig"
-    BI_DIM_SEDE ||--o{ BI_FACT_EVALUACION_FINAL : en
-    BI_DIM_CATEGORIA ||--o{ BI_FACT_EVALUACION_FINAL : de
-    BI_DIM_RANGO_ETARIO_ALUMNO ||--o{ BI_FACT_EVALUACION_FINAL : "edad alumno"
+    BI_DIM_TIEMPO ||--o{ BI_FACT_EVALUACION_FINAL : "Fecha de Evaluacion Final"
+    BI_DIM_SEDE ||--o{ BI_FACT_EVALUACION_FINAL : "Sede"
+    BI_DIM_CATEGORIA ||--o{ BI_FACT_EVALUACION_FINAL : "Categoria"
+    BI_DIM_RANGO_ETARIO_ALUMNO ||--o{ BI_FACT_EVALUACION_FINAL : "Rango_Etario"
 
     %% FACT_PAGO
-    BI_DIM_TIEMPO ||--o{ BI_FACT_PAGO : "Fecha Emision"
-    BI_DIM_TIEMPO ||--o{ BI_FACT_PAGO : "Fecha Vencimiento"
-    BI_DIM_TIEMPO ||--o{ BI_FACT_PAGO : "Fecha Pago"
-    BI_DIM_SEDE ||--o{ BI_FACT_PAGO : en
-    BI_DIM_CATEGORIA ||--o{ BI_FACT_PAGO : de
-    BI_DIM_MEDIO_PAGO ||--o{ BI_FACT_PAGO : con
+    BI_DIM_TIEMPO ||--o{ BI_FACT_PAGO : "Fecha de Pago"
+    BI_DIM_SEDE ||--o{ BI_FACT_PAGO : "Sede"
+    BI_DIM_CATEGORIA ||--o{ BI_FACT_PAGO : "Categoria"
+    BI_DIM_MEDIO_PAGO ||--o{ BI_FACT_PAGO : "Medio_Pago"
 
     %% FACT_ENCUESTA
-    BI_DIM_TIEMPO ||--o{ BI_FACT_ENCUESTA : "Fecha Encuesta"
-    BI_DIM_SEDE ||--o{ BI_FACT_ENCUESTA : en
-    BI_DIM_CATEGORIA ||--o{ BI_FACT_ENCUESTA : de
-    BI_DIM_RANGO_ETARIO_PROFESOR ||--o{ BI_FACT_ENCUESTA : "edad profesor"
-    BI_DIM_SATISFACCION ||--o{ BI_FACT_ENCUESTA : nivel
+    BI_DIM_TIEMPO ||--o{ BI_FACT_ENCUESTA : "Fecha de Encuesta"
+    BI_DIM_SEDE ||--o{ BI_FACT_ENCUESTA : "Sede"
+    BI_DIM_CATEGORIA ||--o{ BI_FACT_ENCUESTA : "Categoria"
+    BI_DIM_RANGO_ETARIO_PROFESOR ||--o{ BI_FACT_ENCUESTA : "Rango_Etario_Profesor"
+    BI_DIM_SATISFACCION ||--o{ BI_FACT_ENCUESTA : "Bloque_Satisfaccion"
